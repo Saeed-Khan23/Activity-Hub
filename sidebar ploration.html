@@ -1,0 +1,2331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Discovery Platform</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ========================= */
+    /* BASE STYLES & VARIABLES */
+    /* ========================= */
+    :root {
+      --primary-color: #0066cc;
+      --accent-color: #28a745;
+      --text-color: #333;
+      --subtext-color: #555;
+      --input-bg: #fff;
+      --input-border: #ccc;
+      --input-border-focus: #0066cc;
+      --button-bg: #065fd4;
+      --button-hover-bg: #005bb5;
+      --modal-bg: #fff;
+      --modal-overlay: rgba(0,0,0,0.5);
+      --font-family: 'Open Sans', sans-serif;
+      --base-font-size: 16px;
+      --line-height: 1.6;
+      --padding: 20px;
+      --border-radius: 4px;
+      --transition-speed: 0.3s;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: var(--font-family);
+      font-size: var(--base-font-size);
+      line-height: var(--line-height);
+      background-color: #f4f4f4;
+      color: var(--text-color);
+      overflow-x: hidden;
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    /* See More styling */
+    .see-more {
+      font-size: 1.1em;
+      color: var(--primary-color);
+      text-decoration: none;
+      white-space: nowrap;
+      margin-left: -10px;
+    }
+    
+    /* ========================= */
+    /* NAVBAR */
+    /* ========================= */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: var(--primary-color);
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      z-index: 1500;
+      flex-wrap: wrap;
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+    }
+    .navbar-trigram {
+      font-size: 1.5em;
+      margin-right: 10px;
+      cursor: pointer;
+      color: #fff;
+    }
+    .navbar-brand h1 {
+      font-size: 1.8em;
+    }
+    .navbar-login {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .navbar-login form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .navbar-login input[type="text"],
+    .navbar-login input[type="password"] {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      color: #333;
+      font-size: 0.95em;
+    }
+    .navbar-login input::placeholder {
+      color: #999;
+    }
+    .navbar-login button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #28a745;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .navbar-login button:hover {
+      background: #218838;
+    }
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .create-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .create-btn:hover {
+      background-color: #218838;
+    }
+    .notification-icon {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      filter: brightness(0) invert(1);
+    }
+    .user-name {
+      font-size: 1em;
+      font-weight: 600;
+      margin-right: 5px;
+    }
+    .profile-dropdown {
+      position: relative;
+      cursor: pointer;
+    }
+    .navbar-profile {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #fff;
+      font-size: 1em;
+      overflow: hidden;
+    }
+    .navbar-profile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .profile-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 50px;
+      background: #fff;
+      color: #333;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      width: 200px;
+      z-index: 100;
+    }
+    .profile-menu .dropdown-item {
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+    .profile-menu .dropdown-item:hover {
+      background: #f0f0f0;
+    }
+    .profile-menu .dropdown-divider {
+      height: 1px;
+      background: #ccc;
+      margin: 5px 0;
+    }
+    
+    /* ========================= */
+    /* SIDEBAR STYLES */
+    /* ========================= */
+    .sidebar {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 200px;
+      height: calc(100% - 60px);
+      background-color: var(--primary-color);
+      color: #fff;
+      padding: 20px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      z-index: 1400;
+      transition: width var(--transition-speed);
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar.collapsed {
+      width: 60px;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex-grow: 1;
+    }
+    .sidebar li {
+      margin-bottom: 20px;
+    }
+    /* Sidebar links will be updated dynamically and include full width and padding */
+    .sidebar li a {
+      color: #fff;
+      font-size: 1em;
+      font-weight: 600;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 10px 15px;
+      border-radius: 4px;
+    }
+    /* Increase the hover area with a background effect */
+    .sidebar li a:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+      transition: background-color 0.3s ease;
+    }
+    .sidebar li a img {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+      filter: brightness(0) invert(1);
+    }
+    .sidebar li a .sidebar-text,
+    .sidebar li a .badge {
+      transition: opacity var(--transition-speed);
+    }
+    .sidebar.collapsed li a .sidebar-text,
+    .sidebar.collapsed li a .badge {
+      opacity: 0;
+    }
+    .badge {
+      background-color: var(--accent-color);
+      color: #fff;
+      font-size: 0.7em;
+      border-radius: 3px;
+      padding: 2px 4px;
+      margin-left: 5px;
+      text-transform: uppercase;
+    }
+    /* Ensure Careers stays at the bottom */
+    .sidebar ul li:last-child {
+      margin-top: auto;
+    }
+    
+    /* ========================= */
+    /* MAIN CONTENT ADJUSTMENT */
+    /* ========================= */
+    .main-content {
+      margin-left: 220px;
+      padding: 20px;
+      transition: margin-left var(--transition-speed);
+    }
+    .sidebar.collapsed + .main-content {
+      margin-left: 80px;
+    }
+    
+    /* ========================= */
+    /* SEARCH CONTAINER STYLES */
+    /* ========================= */
+    .search-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      max-width: 500px;
+    }
+    .search-container input {
+      width: 100%;
+      padding: 12px 12px 12px 40px;
+      font-size: 1em;
+      background: #fff;
+      border: 1px solid #ccc;
+      color: #333;
+      border-radius: 4px;
+      transition: border-color 0.3s;
+    }
+    .search-container input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      background-color: #999;
+      -webkit-mask-image: url('https://i.imgur.com/8xcBP6M.png');
+      mask-image: url('https://i.imgur.com/8xcBP6M.png');
+      -webkit-mask-size: cover;
+      mask-size: cover;
+    }
+    
+    /* ========================= */
+    /* CREATE BUTTON ICON */
+    /* ========================= */
+    .create-btn .create-icon {
+      width: 20px;
+      height: 20px;
+      background-color: #fff;
+      -webkit-mask-image: url('https://i.imgur.com/dN9hXT9.png');
+      mask-image: url('https://i.imgur.com/dN9hXT9.png');
+      -webkit-mask-size: cover;
+      mask-size: cover;
+      display: inline-block;
+    }
+    
+    /* ========================= */
+    /* PAGE LOADERS (Initial & Submission) */
+    /* ========================= */
+    .loading-animation, .loader {
+      width: 40px;
+      height: 40px;
+      background: var(--primary-color);
+      border-radius: 50%;
+      animation: dance 1s infinite ease-in-out;
+    }
+    @keyframes dance {
+      0% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-10px) rotate(15deg); }
+      50% { transform: translateY(0) rotate(0deg); }
+      75% { transform: translateY(10px) rotate(-15deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+    /* Full screen page loader */
+    #pageLoader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.8);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    #loadingMessage {
+      margin-top: 15px;
+      font-size: 1.2em;
+      color: var(--text-color);
+    }
+    #loadingOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.9);
+      z-index: 3000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    #loadingOverlay p {
+      font-size: 1.2em;
+      color: var(--text-color);
+      text-align: center;
+    }
+    
+    /* ========================= */
+    /* DISCOVERY PAGE CONTENT */
+    /* ========================= */
+    .page-header {
+      max-width: 1200px;
+      margin: 80px auto 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .page-header h2 {
+      font-size: 2em;
+      color: var(--text-color);
+    }
+    .page-header .search-container {
+      margin-top: 10px;
+    }
+    
+    #categoriesContainer {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    .category-header {
+      font-size: 1.5em;
+      margin: 20px 0 10px;
+      padding-left: 10px;
+      border-left: 4px solid var(--primary-color);
+      color: #333;
+      width: 100%;
+    }
+    .category-projects {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .project-card {
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 15px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .project-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .project-logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-right: 10px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+    }
+    .project-header h3 {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 1.2em;
+      margin: 0;
+    }
+    .project-card p {
+      margin-bottom: 15px;
+      font-size: 0.95em;
+      color: #555;
+    }
+    .project-info {
+      font-size: 0.8em;
+      color: #555;
+      margin-top: 8px;
+    }
+    .tags {
+      margin-top: 10px;
+    }
+    .tag {
+      display: inline-block;
+      background: #eee;
+      color: #555;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 0.8em;
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+    
+    /* ========================= */
+    /* DISCOVERY MODALS */
+    /* ========================= */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 5px;
+      position: relative;
+      color: #333;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .close {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover,
+    .close:focus {
+      color: #000;
+      text-decoration: none;
+    }
+    .visit-button {
+      background: var(--button-bg);
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      cursor: pointer;
+      margin: 0 5px;
+    }
+    #modalHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    #modalHeader .title-container {
+      display: flex;
+      align-items: center;
+    }
+    #modalHeader img.project-logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-right: 10px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+    }
+    #modalHeader h3 {
+      font-size: 1.5em;
+      margin: 0;
+    }
+    #modalDescription {
+      margin-bottom: 10px;
+      text-align: left;
+    }
+    #modalProjectInfo {
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #555;
+      text-align: left;
+    }
+    #modalProjectInfo > div {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+    }
+    #modalProjectInfo img.icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      vertical-align: middle;
+      filter: grayscale(100%) brightness(0.6);
+    }
+    .project-contact {
+      margin-top: 8px;
+      font-size: 0.9em;
+      color: #555;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    .project-contact img.contact-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+      filter: grayscale(100%) brightness(0.6);
+    }
+    .project-contact button {
+      margin-right: 5px;
+      padding: 4px 8px;
+      font-size: 0.8em;
+      background: #eee;
+      color: #555;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .project-contact span.email-address {
+      font-weight: normal;
+      cursor: pointer;
+      font-size: 0.9em;
+      position: relative;
+      display: inline-block;
+    }
+    .copy-tooltip {
+      visibility: hidden;
+      opacity: 0;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 4px;
+      padding: 3px 6px;
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: opacity 0.3s;
+      font-size: 0.75em;
+      white-space: nowrap;
+      z-index: 10;
+    }
+    .email-address:hover .copy-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+    #modalProjectInfo .tags {
+      margin-top: 5px;
+    }
+    /* Socials, Events & Share Buttons styled as pills with thicker borders,
+       larger bold capitalized text and a smooth color-change on hover */
+    .socials-button, .events-button, .share-button {
+      background-color: transparent;
+      border: 2px solid var(--primary-color);
+      border-radius: 9999px;
+      padding: 8px 16px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      color: var(--primary-color);
+      text-transform: capitalize;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+    .socials-button img,
+    .events-button img,
+    .share-button img {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+      filter: invert(27%) sepia(100%) saturate(3000%) hue-rotate(190deg) brightness(95%) contrast(90%);
+      transition: filter 0.3s;
+    }
+    .socials-button:hover,
+    .events-button:hover,
+    .share-button:hover {
+      background-color: var(--primary-color);
+      color: #fff;
+      border-color: var(--primary-color);
+    }
+    .socials-button:hover img,
+    .events-button:hover img,
+    .share-button:hover img {
+      filter: invert(100%);
+    }
+    
+    /* ========================= */
+    /* SHARE MODAL */
+    /* ========================= */
+    #shareModal .modal-content {
+      width: 500px;
+      max-width: 90%;
+      padding: 30px;
+      border-radius: 8px;
+      text-align: center;
+      position: relative;
+    }
+    #shareModal h2 {
+      margin-bottom: 20px;
+      font-size: 1.8em;
+    }
+    /* QR Code button placed under the title */
+    #qrCodeOptionBtn {
+      background: var(--button-bg);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 0.8em;
+      margin-bottom: 20px;
+    }
+    #qrCodeOptionBtn:hover {
+      background: var(--button-hover-bg);
+    }
+    .share-options {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .share-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+    .share-option img {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 8px;
+    }
+    .share-option span {
+      font-size: 0.9em;
+      color: #333;
+    }
+    .share-link-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .share-link-preview input {
+      width: 70%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .share-link-preview button {
+      padding: 8px 12px;
+      border: none;
+      background: var(--button-bg);
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .share-link-preview button:hover {
+      background: var(--button-hover-bg);
+    }
+    
+    /* ========================= */
+    /* QR CODE MODAL */
+    /* ========================= */
+    #qrCodeModal .modal-content {
+      width: 400px;
+      max-width: 90%;
+      padding: 30px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    #qrCodeModal h2 {
+      margin-bottom: 20px;
+      font-size: 1.8em;
+    }
+    #qrCodeModal img {
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: #fff;
+    }
+    #qrCodeModal .qr-actions {
+      display: flex;
+      justify-content: space-around;
+      gap: 10px;
+    }
+    #qrCodeModal .qr-actions button {
+      padding: 8px 12px;
+      border: none;
+      background: var(--button-bg);
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #qrCodeModal .qr-actions button:hover {
+      background: var(--button-hover-bg);
+    }
+    
+    /* ========================= */
+    /* NEW COPY CONFIRMATION MODALS */
+    /* ========================= */
+    .confirmation-modal {
+      display: none;
+      position: fixed;
+      z-index: 1101;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .confirmation-modal .modal-content {
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #888;
+      border-radius: 4px;
+      text-align: center;
+      max-width: 300px;
+    }
+    .confirmation-modal .modal-content button {
+      background: var(--button-bg);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 0.9em;
+      margin-top: 10px;
+    }
+    .confirmation-modal .modal-content button:hover {
+      background: var(--button-hover-bg);
+    }
+    
+    /* ========================= */
+    /* ALL SOCIALS MODAL (Left aligned) */
+    /* ========================= */
+    #allSocialsModal .modal-content {
+      width: 300px;
+      padding: 20px;
+      border: 1px solid #888;
+      border-radius: 5px;
+      text-align: left;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #333;
+    }
+    #allSocialsModal .modal-content h3 {
+      margin-bottom: 15px;
+    }
+    
+    /* ========================= */
+    /* COMMENTS SECTION */
+    /* ========================= */
+    #commentsSection {
+      margin-top: 20px;
+      text-align: left;
+    }
+    #commentsSection h3 {
+      margin-bottom: 10px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+    }
+    .comment-container {
+      margin-bottom: 15px;
+    }
+    .comment-item {
+      display: flex;
+      align-items: flex-start;
+      position: relative;
+    }
+    .pfp {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      margin-right: 10px;
+      flex-shrink: 0;
+      font-size: 1em;
+      background: #777;
+    }
+    .comment-content {
+      flex: 1;
+    }
+    .comment-content p {
+      margin-bottom: 5px;
+    }
+    .comment-actions {
+      margin-top: 5px;
+    }
+    .toggle-replies,
+    .reply-button {
+      background: none;
+      border: none;
+      color: #065fd4;
+      cursor: pointer;
+      font-size: 0.9em;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    .replies-container {
+      margin-left: 50px;
+      padding-left: 20px;
+      position: relative;
+      display: none;
+      margin-top: 10px;
+    }
+    .replies-container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 10px;
+      width: 2px;
+      background: #ddd;
+    }
+    .replies-container .comment-item {
+      margin-bottom: 10px;
+    }
+    /* New Comment Form */
+    #newCommentSection {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 15px;
+    }
+    #newCommentForm {
+      display: flex;
+      align-items: center;
+    }
+    #newCommentForm input[type="text"] {
+      flex: 1;
+      padding: 8px;
+      font-size: 0.95em;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      color: #333;
+      transition: border-color 0.3s;
+    }
+    #newCommentForm input[type="text"]:focus {
+      border-color: #0066cc;
+      outline: none;
+    }
+    #newCommentForm button {
+      margin-left: 10px;
+      padding: 8px 12px;
+      background: var(--button-bg);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: none;
+    }
+    #newCommentForm:focus-within button {
+      display: inline-block;
+    }
+    .reply-form {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .reply-form input[type="text"] {
+      flex: 1;
+      padding: 8px;
+      font-size: 0.95em;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      color: #333;
+      transition: border-color 0.3s;
+    }
+    .reply-form input[type="text"]:focus {
+      border-color: #0066cc;
+      outline: none;
+    }
+    .reply-form button {
+      margin-left: 10px;
+      padding: 8px 12px;
+      background: var(--button-bg);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: none;
+    }
+    .reply-form:focus-within button {
+      display: inline-block;
+    }
+    
+    /* ========================= */
+    /* FOOTER */
+    /* ========================= */
+    footer {
+      background: #333;
+      color: #fff;
+      text-align: center;
+      padding: 15px 0;
+      margin-top: 40px;
+    }
+    
+    /* ========================= */
+    /* EMAIL LOADING SPINNER */
+    /* ========================= */
+    .email-loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ccc;
+      border-top: 2px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 5px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  <!-- Fetch hyperlinks from the API dynamically -->
+  <script>
+    let hyperlinks = {};
+    function updateSidebarLinks() {
+      const sidebarLinks = document.querySelectorAll("aside.sidebar ul li a");
+      // Order: [Explore, Projects, Events, People, News, Careers]
+      if(sidebarLinks[0]) sidebarLinks[0].href = hyperlinks["Explore/Projects"] || "#";
+      if(sidebarLinks[1]) sidebarLinks[1].href = hyperlinks["Explore/Projects"] || "#";
+      if(sidebarLinks[2]) sidebarLinks[2].href = hyperlinks["Events"] || "#";
+      if(sidebarLinks[3]) sidebarLinks[3].href = hyperlinks["People"] || "#";
+      // For News and Careers, if no hyperlink provided, they remain "#"
+    }
+    // Fetch hyperlinks from the API so that if values change, they are updated automatically.
+    fetch("https://sheet2api.com/v1/rhBSJNTTYKgC/hyperlinks")
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          hyperlinks = data[0];
+          updateSidebarLinks();
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching hyperlink data:", error);
+      });
+  </script>
+</head>
+<body>
+  <!-- PAGE LOADER -->
+  <div id="pageLoader">
+    <div class="loading-animation"></div>
+    <div id="loadingMessage">Warming up the servers...</div>
+  </div>
+  
+  <!-- NAVBAR -->
+  <nav>
+    <div class="navbar-brand">
+      <span class="navbar-trigram" onclick="toggleSidebar()">☰</span>
+      <h1>Activity Hub</h1>
+    </div>
+    <div class="navbar-login" id="navbarLoginArea">
+      <form id="loginForm">
+        <input type="text" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </nav>
+  
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <ul>
+      <li>
+        <a href="#">
+          <img src="https://i.imgur.com/D1hBPWB.png" alt="Explore Icon">
+          <span class="sidebar-text">Explore</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <img src="https://i.imgur.com/vXf8deX.png" alt="Projects Icon">
+          <span class="sidebar-text">Projects</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <img src="https://i.imgur.com/yZBkhSQ.png" alt="Events Icon">
+          <span class="sidebar-text">Events</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <img src="https://i.imgur.com/ywt4vVm.png" alt="People Icon">
+          <span class="sidebar-text">People</span>
+          <span class="badge">New</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <img src="https://i.imgur.com/mPywFJn.png" alt="News Icon">
+          <span class="sidebar-text">News</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <img src="https://i.imgur.com/Npz4Sym.png" alt="Careers Icon">
+          <span class="sidebar-text">Careers</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
+  
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <div class="page-header">
+      <div class="search-container">
+        <span class="search-icon"></span>
+        <input type="text" id="searchInput" placeholder="Search projects...">
+      </div>
+    </div>
+    <div id="categoriesContainer"></div>
+  </div>
+  
+  <!-- DISCOVERY PAGE MODALS -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="modalClose">&times;</span>
+      <div id="modalHeader"></div>
+      <p id="modalDescription"></p>
+      <div id="modalProjectInfo"></div>
+      <div id="commentsSection">
+        <h3>Comments</h3>
+        <div id="newCommentSection">
+          <form id="newCommentForm">
+            <input type="text" id="newCommentInput" placeholder="Add a comment..." required>
+            <button type="submit" class="post-btn">Post</button>
+            <button type="button" class="cancel-btn" id="cancelNewComment">Cancel</button>
+          </form>
+        </div>
+        <div id="commentsContainer"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Captcha Modal -->
+  <div id="captchaModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="captchaClose">&times;</span>
+      <h3>Please confirm you're not a robot</h3>
+      <p>Click the button below to verify.</p>
+      <button id="captchaConfirmBtn">Verifying...</button>
+    </div>
+  </div>
+  
+  <!-- No Demo Modal -->
+  <div id="noDemoModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="noDemoClose">&times;</span>
+      <h3>No Demo Available</h3>
+      <p>There is no demo link provided for this project.</p>
+      <button id="noDemoOkBtn">OK</button>
+    </div>
+  </div>
+  
+  <!-- Social Modal (for link not available) -->
+  <div id="socialModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="socialModalClose">&times;</span>
+      <h3 id="socialModalTitle">Link Not Available</h3>
+      <p id="socialModalMessage">This social link is not available for this project.</p>
+      <button id="socialModalOkBtn">OK</button>
+    </div>
+  </div>
+  
+  <!-- Logo Modal -->
+  <div id="logoModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="logoModalClose">&times;</span>
+      <img id="logoModalImage" src="" alt="Large Logo">
+    </div>
+  </div>
+  
+  <!-- EVENTS MODAL -->
+  <div id="eventsModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="eventsModalClose">&times;</span>
+      <h2>Events</h2>
+      <p>No events have been posted yet.</p>
+      <button id="eventsModalOkBtn">OK</button>
+    </div>
+  </div>
+  
+  <!-- SHARE MODAL -->
+  <div id="shareModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="shareModalClose">&times;</span>
+      <h2>Share</h2>
+      <!-- QR Code button placed under the title -->
+      <button id="qrCodeOptionBtn">QR Code</button>
+      <div id="shareOptions" class="share-options">
+        <!-- Share options will be dynamically populated -->
+      </div>
+      <hr>
+      <div class="share-link-preview">
+        <input type="text" id="shareLinkInput" readonly>
+        <button id="copyShareLinkBtn">Copy Link</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- QR CODE MODAL -->
+  <div id="qrCodeModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="qrCodeModalClose">&times;</span>
+      <h2>QR Code</h2>
+      <img id="qrCodeImage" src="" alt="QR Code">
+      <div class="qr-actions">
+        <button id="downloadQRBtn">Download QR Code</button>
+        <button id="copyQRBtn">Copy QR Code</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- NEW COPY CONFIRMATION MODALS -->
+  <div id="copyLinkConfirmation" class="confirmation-modal">
+    <div class="modal-content">
+      <p style="font-size:0.9em; margin:5px 0;">Link copied to clipboard!</p>
+      <button onclick="document.getElementById('copyLinkConfirmation').style.display='none'">OK</button>
+    </div>
+  </div>
+  <div id="copyQRConfirmation" class="confirmation-modal">
+    <div class="modal-content">
+      <p style="font-size:0.9em; margin:5px 0;">QR Code copied to clipboard!</p>
+      <button onclick="document.getElementById('copyQRConfirmation').style.display='none'">OK</button>
+    </div>
+  </div>
+  
+  <!-- ALL SOCIALS MODAL -->
+  <div id="allSocialsModal" class="modal">
+    <div class="modal-content" style="text-align: left;">
+      <span class="close" id="allSocialsModalClose">&times;</span>
+      <h3>Socials</h3>
+      <div id="allSocialsContainer"></div>
+    </div>
+  </div>
+  
+  <!-- Additional Modals (Logout, Profile, Create, Notification) -->
+  <div id="logoutModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="logoutModalClose">&times;</span>
+      <h2>Confirm Logout</h2>
+      <p>Are you sure you want to log out?</p>
+      <button id="confirmLogoutBtn">Yes, log out</button>
+      <button id="cancelLogoutBtn">Cancel</button>
+    </div>
+  </div>
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="profileModalClose">&times;</span>
+      <h2>Your Profile</h2>
+      <div id="profileContent"></div>
+    </div>
+  </div>
+  <div id="createModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="createModalClose">&times;</span>
+      <h2>Create</h2>
+      <p>This feature is coming soon. Stay tuned!</p>
+    </div>
+  </div>
+  <div id="notificationModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="notificationModalClose">&times;</span>
+      <h2>Notifications</h2>
+      <p>There are no notifications yet, but you'll see them here whenever you do get any!</p>
+    </div>
+  </div>
+  
+  <script>
+    /* Sidebar Toggle Function */
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      sidebar.classList.toggle("collapsed");
+    }
+    
+    /* Updated categories (sections) */
+    const categories = [
+      "Organization",
+      "Startup & Small Business",
+      "Research & Development"
+    ];
+    
+    let projects = [];
+    const participantRanges = ["1-10 members", "11-50 members", "51-100 members", "101-250 members", "251-500 members"];
+    
+    function showSkeletonLoaders() {
+      const container = document.getElementById('categoriesContainer');
+      container.innerHTML = "";
+      categories.forEach(category => {
+        const sectionHeader = document.createElement('h2');
+        sectionHeader.className = "category-header skeleton";
+        sectionHeader.style.height = "24px";
+        sectionHeader.style.width = "200px";
+        container.appendChild(sectionHeader);
+        const grid = document.createElement('div');
+        grid.className = "category-projects";
+        for (let i = 0; i < 4; i++) {
+          const skeletonCard = document.createElement('div');
+          skeletonCard.className = "skeleton-card";
+          const skeletonHeader = document.createElement('div');
+          skeletonHeader.className = "skeleton-header";
+          const skeletonLogo = document.createElement('div');
+          skeletonLogo.className = "skeleton skeleton-logo";
+          skeletonHeader.appendChild(skeletonLogo);
+          const skeletonTitle = document.createElement('div');
+          skeletonTitle.className = "skeleton skeleton-text";
+          skeletonHeader.appendChild(skeletonTitle);
+          skeletonCard.appendChild(skeletonHeader);
+          const skeletonDesc1 = document.createElement('div');
+          skeletonDesc1.className = "skeleton skeleton-line";
+          skeletonDesc1.style.width = "100%";
+          skeletonCard.appendChild(skeletonDesc1);
+          const skeletonDesc2 = document.createElement('div');
+          skeletonDesc2.className = "skeleton skeleton-line";
+          skeletonDesc2.style.width = "80%";
+          skeletonCard.appendChild(skeletonDesc2);
+          grid.appendChild(skeletonCard);
+        }
+        container.appendChild(grid);
+      });
+    }
+    showSkeletonLoaders();
+    
+    // Fetch project data
+    fetch("https://sheet2api.com/v1/rkmbUqHQAC3C/submission-form-responses")
+      .then(response => response.json())
+      .then(data => {
+        projects = data.map(item => ({
+          title: item["Project Title"],
+          description: item["Tagline"],
+          modalDescription: item["Description"],
+          category: item["Project Type"],
+          logo: item["Logo URL"],
+          demoLink: item["Demo Link"],
+          contactEmail: item["Project Contact Email"],
+          participants: item["Number of participants"],
+          school: item["College or University Name"],
+          tags: item["Industry"] ? item["Industry"].split(",").map(s => s.trim()) : [],
+          instagram: item["Instagram"],
+          linkedIn: item["LinkedIn"],
+          youtube: item["YouTube"],
+          tiktok: item["TikTok"],
+          github: item["GitHub"],
+          discord: item["Discord"],
+          groupme: item["GroupMe"],
+          twitter: item["Twitter"],
+          linktree: item["LinkTree"],
+          website: item["Website"],
+          projectId: item["Project ID"]
+        }));
+        renderCategories();
+        checkDeepLink();
+      })
+      .catch(error => { console.error("Error fetching project data:", error); });
+    
+    function getProjectEmail(project) {
+      return project.contactEmail || project.title.toLowerCase().replace(/\s+/g, '') + "@stjohns.edu";
+    }
+    
+    /* Comments Section Functions */
+    let commentsData = [
+      {
+        author: "Alice Johnson",
+        text: "This project looks really promising!",
+        replies: [
+          { author: "Bob Smith", text: "I agree, the concept is innovative." },
+          { author: "Carol Evans", text: "Can't wait to see it in action." }
+        ]
+      },
+      {
+        author: "Dave Brown",
+        text: "Are there any prerequisites for joining this project?",
+        replies: [
+          { author: "Eve Adams", text: "I believe it's open to everyone with interest." }
+        ]
+      }
+    ];
+    
+    function getInitials(name) {
+      const parts = name.trim().split(' ');
+      return parts.length >= 2
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : (name.length > 1 ? (name[0] + name[name.length - 1]).toUpperCase() : name.toUpperCase());
+    }
+    
+    function getRandomColor() {
+      const r = Math.floor(Math.random() * (200 - 50) + 50);
+      const g = Math.floor(Math.random() * (200 - 50) + 50);
+      const b = Math.floor(Math.random() * (200 - 50) + 50);
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+    
+    function renderCommentItem(comment) {
+      const commentItem = document.createElement('div');
+      commentItem.className = "comment-item";
+      const pfp = document.createElement('div');
+      pfp.className = 'pfp';
+      pfp.style.backgroundColor = getRandomColor();
+      pfp.textContent = getInitials(comment.author);
+      commentItem.appendChild(pfp);
+      const content = document.createElement('div');
+      content.className = 'comment-content';
+      const textP = document.createElement('p');
+      textP.innerHTML = `<strong>${comment.author}:</strong> ${comment.text}`;
+      content.appendChild(textP);
+      commentItem.appendChild(content);
+      return commentItem;
+    }
+    
+    function renderComment(comment) {
+      const container = document.createElement('div');
+      container.className = "comment-container";
+      const commentElement = renderCommentItem(comment);
+      const commentContent = commentElement.querySelector('.comment-content');
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'comment-actions';
+      let repliesContainer = null;
+      if (comment.replies && comment.replies.length > 0) {
+        const toggleButton = document.createElement('button');
+        toggleButton.className = 'toggle-replies';
+        toggleButton.textContent = 'Show replies';
+        actionsDiv.appendChild(toggleButton);
+        repliesContainer = document.createElement('div');
+        repliesContainer.className = 'replies-container';
+        comment.replies.forEach(reply => {
+          const replyElement = renderCommentItem(reply);
+          repliesContainer.appendChild(replyElement);
+        });
+        toggleButton.addEventListener('click', () => {
+          if (repliesContainer.style.display === 'none' || repliesContainer.style.display === '') {
+            repliesContainer.style.display = 'block';
+            toggleButton.textContent = 'Hide replies';
+          } else {
+            repliesContainer.style.display = 'none';
+            toggleButton.textContent = 'Show replies';
+          }
+        });
+      }
+      const replyButton = document.createElement('button');
+      replyButton.className = 'reply-button';
+      replyButton.textContent = 'Reply';
+      actionsDiv.appendChild(replyButton);
+      commentContent.appendChild(actionsDiv);
+      container.appendChild(commentElement);
+      if (repliesContainer) {
+        container.appendChild(repliesContainer);
+      }
+      replyButton.addEventListener('click', () => {
+        if (container.querySelector('.reply-form')) return;
+        const replyForm = document.createElement('form');
+        replyForm.className = 'reply-form';
+        const replyInput = document.createElement('input');
+        replyInput.type = 'text';
+        replyInput.placeholder = 'Add a reply...';
+        replyInput.required = true;
+        const postReplyButton = document.createElement('button');
+        postReplyButton.type = 'submit';
+        postReplyButton.textContent = 'Post';
+        const cancelReplyButton = document.createElement('button');
+        cancelReplyButton.type = 'button';
+        cancelReplyButton.textContent = 'Cancel';
+        replyForm.appendChild(replyInput);
+        replyForm.appendChild(postReplyButton);
+        replyForm.appendChild(cancelReplyButton);
+        if (repliesContainer) {
+          container.insertBefore(replyForm, repliesContainer);
+        } else {
+          container.appendChild(replyForm);
+        }
+        replyInput.focus();
+        replyForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const replyText = replyInput.value.trim();
+          if (replyText) {
+            if (!comment.replies) comment.replies = [];
+            comment.replies.push({ author: "John Doe", text: replyText, replies: [] });
+            renderComments(commentsData);
+          }
+        });
+        cancelReplyButton.addEventListener('click', () => { replyForm.remove(); });
+      });
+      return container;
+    }
+    
+    function renderComments(comments) {
+      const container = document.getElementById('commentsContainer');
+      container.innerHTML = "";
+      comments.forEach(comment => {
+        const commentContainer = renderComment(comment);
+        container.appendChild(commentContainer);
+      });
+    }
+    
+    /* ========================= */
+    /* OPEN MODAL FUNCTION (GLOBAL) */
+    /* ========================= */
+    function openModal(project, idx) {
+      const modal = document.getElementById("modal");
+      document.getElementById("modalHeader").innerHTML = "";
+      
+      // Build header with project logo and title
+      const headerContainer = document.createElement("div");
+      headerContainer.style.display = "flex";
+      headerContainer.style.justifyContent = "space-between";
+      headerContainer.style.alignItems = "center";
+      headerContainer.style.width = "100%";
+      
+      const leftContainer = document.createElement("div");
+      leftContainer.className = "title-container";
+      leftContainer.style.display = "flex";
+      leftContainer.style.alignItems = "center";
+      const logoImg = document.createElement("img");
+      logoImg.src = project.logo || "https://images.vexels.com/media/users/3/137617/isolated/preview/c45afb857e72b86e87baaf255f71ff37-geometric-logo-abstract-by-vexels.png";
+      logoImg.alt = "Project Logo";
+      logoImg.className = "project-logo";
+      logoImg.addEventListener("click", () => { openLogoModal(logoImg.src); });
+      const titleText = document.createElement("h3");
+      titleText.textContent = project.title;
+      leftContainer.appendChild(logoImg);
+      leftContainer.appendChild(titleText);
+      
+      const rightContainer = document.createElement("div");
+      rightContainer.style.marginRight = "20px";
+      const visitBtn = document.createElement("button");
+      visitBtn.className = "visit-button";
+      visitBtn.textContent = "Visit";
+      visitBtn.addEventListener("click", () => {
+        if (project.demoLink && project.demoLink.trim() !== "") {
+          window.open(project.demoLink, "_blank");
+        } else {
+          openNoDemoModal();
+        }
+      });
+      rightContainer.appendChild(visitBtn);
+      
+      headerContainer.appendChild(leftContainer);
+      headerContainer.appendChild(rightContainer);
+      document.getElementById("modalHeader").appendChild(headerContainer);
+      
+      // Set modal description
+      document.getElementById("modalDescription").textContent = project.modalDescription || project.description;
+      
+      // Build project info section
+      const infoContainer = document.getElementById("modalProjectInfo");
+      infoContainer.innerHTML = "";
+      
+      const schoolDiv = document.createElement("div");
+      schoolDiv.className = "project-school";
+      const schoolIcon = document.createElement("img");
+      schoolIcon.className = "icon";
+      schoolIcon.src = "https://i.imgur.com/EkoIEZj.png";
+      schoolIcon.alt = "School Icon";
+      const schoolText = document.createElement("span");
+      schoolText.textContent = " " + (project.school || "St Johns University");
+      schoolDiv.appendChild(schoolIcon);
+      schoolDiv.appendChild(schoolText);
+      infoContainer.appendChild(schoolDiv);
+      
+      const contactDiv = document.createElement("div");
+      contactDiv.className = "project-contact";
+      const contactIcon = document.createElement("img");
+      contactIcon.className = "contact-icon";
+      contactIcon.src = "https://imgur.com/va70cTC.png";
+      contactIcon.alt = "Contact Icon";
+      contactIcon.style.filter = "grayscale(100%) brightness(0.6)";
+      
+      const viewEmailBtn = document.createElement("button");
+      viewEmailBtn.textContent = "View Email Address";
+      viewEmailBtn.style.background = "#eee";
+      viewEmailBtn.style.color = "#555";
+      viewEmailBtn.style.borderRadius = "12px";
+      viewEmailBtn.style.border = "none";
+      viewEmailBtn.style.padding = "4px 8px";
+      
+      // Create a span to hold the email address and its copy tooltip.
+      const emailSpan = document.createElement("span");
+      emailSpan.className = "email-address";
+      emailSpan.style.display = "none";
+      emailSpan.textContent = project.contactEmail || getProjectEmail(project);
+      const copyTooltip = document.createElement("span");
+      copyTooltip.className = "copy-tooltip";
+      copyTooltip.textContent = "Click to copy";
+      emailSpan.appendChild(copyTooltip);
+      
+      // Wrap the email span in a container so we can also append a loader
+      const emailWrapper = document.createElement("div");
+      emailWrapper.style.position = "relative";
+      emailWrapper.appendChild(emailSpan);
+      
+      // Add event listener for the button with a loading spinner before revealing the email address
+      viewEmailBtn.addEventListener("click", function() {
+        viewEmailBtn.style.display = "none";
+        const emailLoader = document.createElement("span");
+        emailLoader.className = "email-loading";
+        emailWrapper.appendChild(emailLoader);
+        setTimeout(function() {
+          emailLoader.remove();
+          emailSpan.style.display = "inline";
+        }, 2000);
+      });
+      
+      contactDiv.appendChild(contactIcon);
+      contactDiv.appendChild(viewEmailBtn);
+      contactDiv.appendChild(emailWrapper);
+      infoContainer.appendChild(contactDiv);
+      
+      const participantsDiv = document.createElement("div");
+      participantsDiv.className = "project-participants";
+      const participantsIcon = document.createElement("img");
+      participantsIcon.className = "icon";
+      participantsIcon.src = "https://i.imgur.com/Yxqk42o.png";
+      participantsIcon.alt = "Participants Icon";
+      const participantsText = document.createElement("span");
+      participantsText.textContent = " " + (project.participants || participantRanges[idx % participantRanges.length]);
+      participantsDiv.appendChild(participantsIcon);
+      participantsDiv.appendChild(participantsText);
+      infoContainer.appendChild(participantsDiv);
+      
+      const tagsDiv = document.createElement("div");
+      tagsDiv.className = "tags";
+      project.tags.forEach(function(tag) {
+        const tagSpan = document.createElement("span");
+        tagSpan.className = "tag";
+        tagSpan.textContent = tag;
+        tagsDiv.appendChild(tagSpan);
+      });
+      infoContainer.appendChild(tagsDiv);
+      
+      // Socials, Events and Share Buttons Container
+      const socialShareContainer = document.createElement("div");
+      socialShareContainer.style.display = "flex";
+      socialShareContainer.style.alignItems = "center";
+      socialShareContainer.style.marginTop = "10px";
+      socialShareContainer.style.gap = "16px";
+      
+      const socialsArray = [
+        { name: "Instagram", icon: "https://i.imgur.com/QprVz5X.png", link: project.instagram },
+        { name: "LinkedIn", icon: "https://i.imgur.com/leIC8ai.png", link: project.linkedIn },
+        { name: "YouTube", icon: "https://i.imgur.com/ck479WO.png", link: project.youtube },
+        { name: "TikTok", icon: "https://i.imgur.com/UwtgjSA.png", link: project.tiktok },
+        { name: "GitHub", icon: "https://i.imgur.com/cr0kYsa.png", link: project.github },
+        { name: "Website", icon: "https://i.imgur.com/OfEIXOK.png", link: project.website },
+        { name: "Linktree", icon: "https://i.imgur.com/yr2y17y.png", link: project.linktree },
+        { name: "Discord", icon: "https://i.imgur.com/uPDTny1.png", link: project.discord },
+        { name: "Groupme", icon: "https://i.imgur.com/gCEDtvJ.png", link: project.groupme },
+        { name: "Twitter", icon: "https://i.imgur.com/ST7qC7U.png", link: project.twitter }
+      ];
+      
+      const socialsBtn = document.createElement("button");
+      socialsBtn.className = "socials-button";
+      socialsBtn.innerHTML = `<img src="https://i.imgur.com/ZmFth7V.png" alt="Socials Icon">socials`;
+      socialsBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        openAllSocialsModal(socialsArray, project.category);
+      });
+      socialShareContainer.appendChild(socialsBtn);
+      
+      const eventsBtn = document.createElement("button");
+      eventsBtn.className = "events-button";
+      eventsBtn.innerHTML = `<img src="https://i.imgur.com/YaX59TX.png" alt="Events Icon">events`;
+      eventsBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        openEventsModal();
+      });
+      socialShareContainer.appendChild(eventsBtn);
+      
+      const shareBtn = document.createElement("button");
+      shareBtn.className = "share-button";
+      shareBtn.innerHTML = `<img src="https://i.imgur.com/cO5cMFB.png" alt="Share Icon">share`;
+      shareBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        openShareModal(project);
+      });
+      socialShareContainer.appendChild(shareBtn);
+      
+      infoContainer.appendChild(socialShareContainer);
+      
+      renderComments(commentsData);
+      modal.style.display = "block";
+    }
+    window.openModal = openModal;
+    
+    document.getElementById("modalClose").addEventListener("click", function() {
+      document.getElementById("modal").style.display = "none";
+    });
+    window.addEventListener("click", function(e) {
+      if (e.target == document.getElementById("modal")) {
+        document.getElementById("modal").style.display = "none";
+      }
+    });
+    
+    /* SHARE MODAL FUNCTIONS */
+    function openShareModal(project) {
+      const shareModal = document.getElementById("shareModal");
+      const shareOptionsContainer = document.getElementById("shareOptions");
+      shareOptionsContainer.innerHTML = "";
+      
+      const deeplink = window.location.origin + window.location.pathname + "#project-" + project.projectId;
+      const shareMessage = "check out our " + project.category + " page on activity hub";
+      
+      document.getElementById("qrCodeOptionBtn").onclick = function(e) {
+        e.stopPropagation();
+        openQrCodeModal(deeplink);
+      };
+      
+      const shareOptions = [
+        {
+          name: "LinkedIn",
+          icon: "https://i.imgur.com/leIC8ai.png",
+          url: "https://www.linkedin.com/shareArticle?mini=true&url=" + encodeURIComponent(deeplink) + "&title=" + encodeURIComponent(shareMessage)
+        },
+        {
+          name: "X",
+          icon: "https://i.imgur.com/ST7qC7U.png",
+          url: "https://twitter.com/intent/tweet?url=" + encodeURIComponent(deeplink) + "&text=" + encodeURIComponent(shareMessage)
+        },
+        {
+          name: "WhatsApp",
+          icon: "https://i.imgur.com/SLmt9bk.png",
+          url: "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareMessage + " " + deeplink)
+        },
+        {
+          name: "Reddit",
+          icon: "https://i.imgur.com/zV2S5SI.png",
+          url: "https://www.reddit.com/submit?url=" + encodeURIComponent(deeplink) + "&title=" + encodeURIComponent(shareMessage)
+        },
+        {
+          name: "Email",
+          icon: "https://i.imgur.com/OloPTgu.png",
+          url: "mailto:?subject=" + encodeURIComponent("Check out our " + project.category + " page on activity hub") + "&body=" + encodeURIComponent(shareMessage + "\n\n" + deeplink)
+        }
+      ];
+      
+      shareOptions.forEach(option => {
+        const optionDiv = document.createElement("div");
+        optionDiv.className = "share-option";
+        optionDiv.addEventListener("click", function(e) {
+          e.preventDefault();
+          window.open(option.url, "_blank");
+        });
+        const img = document.createElement("img");
+        img.src = option.icon;
+        img.alt = option.name;
+        const label = document.createElement("span");
+        label.textContent = option.name;
+        optionDiv.appendChild(img);
+        optionDiv.appendChild(label);
+        shareOptionsContainer.appendChild(optionDiv);
+      });
+      
+      document.getElementById("shareLinkInput").value = deeplink;
+      
+      shareModal.style.display = "block";
+    }
+    
+    document.getElementById("shareModalClose").addEventListener("click", function() {
+      document.getElementById("shareModal").style.display = "none";
+    });
+    
+    document.getElementById("copyShareLinkBtn").addEventListener("click", function() {
+      const shareLinkInput = document.getElementById("shareLinkInput");
+      shareLinkInput.select();
+      shareLinkInput.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(shareLinkInput.value).then(() => {
+        document.getElementById("copyLinkConfirmation").style.display = "block";
+      });
+    });
+    
+    /* QR CODE MODAL FUNCTIONS */
+    function openQrCodeModal(deeplink) {
+      const qrModal = document.getElementById("qrCodeModal");
+      const qrImage = document.getElementById("qrCodeImage");
+      qrImage.src = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent(deeplink) + "&size=150x150";
+      qrModal.style.display = "block";
+      
+      document.getElementById("downloadQRBtn").onclick = function() {
+        fetch(qrImage.src)
+          .then(response => response.blob())
+          .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "qr-code.png";
+            a.click();
+            URL.revokeObjectURL(url);
+          });
+      };
+      
+      document.getElementById("copyQRBtn").onclick = function() {
+        fetch(qrImage.src)
+          .then(res => res.blob())
+          .then(blob => {
+            const item = new ClipboardItem({ "image/png": blob });
+            navigator.clipboard.write([item]).then(() => {
+              document.getElementById("copyQRConfirmation").style.display = "block";
+            });
+          });
+      };
+    }
+    
+    document.getElementById("qrCodeModalClose").addEventListener("click", function() {
+      document.getElementById("qrCodeModal").style.display = "none";
+    });
+    
+    /* Captcha Modal */
+    const captchaModal = document.getElementById("captchaModal");
+    const captchaConfirmBtn = document.getElementById("captchaConfirmBtn");
+    const captchaClose = document.getElementById("captchaClose");
+    function openCaptchaModal() {
+      captchaModal.style.display = "block";
+      captchaConfirmBtn.textContent = "Verifying...";
+      captchaConfirmBtn.disabled = true;
+      setTimeout(function() {
+        captchaModal.style.display = "none";
+        captchaConfirmBtn.disabled = false;
+        const emailSpan = document.querySelector(".email-address");
+        if(emailSpan) { emailSpan.style.display = "inline"; }
+      }, 2000);
+    }
+    captchaClose.addEventListener("click", function() {
+      captchaModal.style.display = "none";
+    });
+    window.addEventListener("click", function(e) {
+      if (e.target == captchaModal) {
+        captchaModal.style.display = "none";
+      }
+    });
+    
+    /* No Demo Modal */
+    const noDemoModal = document.getElementById("noDemoModal");
+    const noDemoClose = document.getElementById("noDemoClose");
+    const noDemoOkBtn = document.getElementById("noDemoOkBtn");
+    function openNoDemoModal() {
+      noDemoModal.style.display = "block";
+    }
+    noDemoClose.addEventListener("click", function() {
+      noDemoModal.style.display = "none";
+    });
+    noDemoOkBtn.addEventListener("click", function() {
+      noDemoModal.style.display = "none";
+    });
+    window.addEventListener("click", function(e) {
+      if (e.target == noDemoModal) {
+        noDemoModal.style.display = "none";
+      }
+    });
+    
+    /* Social Modal (for link not available) */
+    function openSocialLinkModal(socialName) {
+      const socialModal = document.getElementById("socialModal");
+      const socialModalTitle = document.getElementById("socialModalTitle");
+      const socialModalMessage = document.getElementById("socialModalMessage");
+      socialModalTitle.textContent = socialName + " Link Not Available";
+      socialModalMessage.textContent = "This " + socialName + " link is not available for this project.";
+      socialModal.style.display = "block";
+    }
+    document.getElementById("socialModalClose").addEventListener("click", function() {
+      document.getElementById("socialModal").style.display = "none";
+    });
+    document.getElementById("socialModalOkBtn").addEventListener("click", function() {
+      document.getElementById("socialModal").style.display = "none";
+    });
+    window.addEventListener("click", function(e) {
+      const socialModal = document.getElementById("socialModal");
+      if (e.target == socialModal) {
+        socialModal.style.display = "none";
+      }
+    });
+    
+    /* Events Modal Functions */
+    function openEventsModal() {
+      document.getElementById("eventsModal").style.display = "block";
+    }
+    document.getElementById("eventsModalClose").addEventListener("click", function() {
+      document.getElementById("eventsModal").style.display = "none";
+    });
+    document.getElementById("eventsModalOkBtn").addEventListener("click", function() {
+      document.getElementById("eventsModal").style.display = "none";
+    });
+    window.addEventListener("click", function(e) {
+      if(e.target == document.getElementById("eventsModal")) {
+        document.getElementById("eventsModal").style.display = "none";
+      }
+    });
+    
+    /* Logo Modal */
+    const logoModal = document.getElementById("logoModal");
+    const logoModalClose = document.getElementById("logoModalClose");
+    const logoModalImage = document.getElementById("logoModalImage");
+    function openLogoModal(logoUrl) {
+      logoModalImage.src = logoUrl;
+      logoModal.style.display = "block";
+    }
+    logoModalClose.addEventListener("click", function() {
+      logoModal.style.display = "none";
+    });
+    window.addEventListener("click", function(e) {
+      if (e.target == logoModal) {
+        logoModal.style.display = "none";
+      }
+    });
+    
+    document.addEventListener("click", function(e) {
+      let emailEl = null;
+      if (e.target.classList.contains("email-address")) {
+        emailEl = e.target;
+      } else if (e.target.parentElement && e.target.parentElement.classList.contains("email-address")) {
+        emailEl = e.target.parentElement;
+      }
+      if (emailEl) {
+        const tooltip = emailEl.querySelector(".copy-tooltip");
+        const email = emailEl.textContent.replace(tooltip.textContent, "").trim();
+        navigator.clipboard.writeText(email).then(function() {
+          tooltip.textContent = "Copied to clipboard";
+          setTimeout(function() { tooltip.textContent = "Click to copy"; }, 2000);
+        });
+      }
+    });
+    
+    /* ========================= */
+    /* RENDER CATEGORIES */
+    /* ========================= */
+    function renderCategories(filter = "") {
+      const container = document.getElementById("categoriesContainer");
+      container.innerHTML = "";
+      let hashCategory = window.location.hash && !window.location.hash.startsWith("#project-") ? window.location.hash.substring(1) : "";
+      categories.forEach(function(category) {
+        if (hashCategory && category.toLowerCase().replace(/\s+/g, '-') !== hashCategory) {
+          return;
+        }
+        let catProjects;
+        if (category === "Startup & Small Business") {
+          catProjects = projects.filter(p => p.category === "Startup" || p.category === "Small Business");
+        } else {
+          catProjects = projects.filter(p => p.category === category);
+        }
+        if (filter.trim() !== "") {
+          catProjects = catProjects.filter(p => 
+            p.title.toLowerCase().includes(filter.toLowerCase()) ||
+            p.description.toLowerCase().includes(filter.toLowerCase()) ||
+            p.tags.some(tag => tag.toLowerCase().includes(filter.toLowerCase()))
+          );
+        }
+        if (catProjects.length > 0) {
+          const headerContainer = document.createElement("div");
+          headerContainer.style.display = "flex";
+          headerContainer.style.justifyContent = "space-between";
+          headerContainer.style.alignItems = "center";
+          const sectionHeader = document.createElement("h2");
+          sectionHeader.className = "category-header";
+          sectionHeader.textContent = category;
+          headerContainer.appendChild(sectionHeader);
+          if (catProjects.length >= 4 && hashCategory === "") {
+            const seeMoreLink = document.createElement("a");
+            seeMoreLink.href = "#" + category.toLowerCase().replace(/\s+/g, '-');
+            seeMoreLink.textContent = "See More";
+            seeMoreLink.className = "see-more";
+            seeMoreLink.addEventListener("click", function(e) {
+              e.preventDefault();
+              seeMoreLink.style.visibility = "hidden";
+              const pageLoader = document.getElementById("pageLoader");
+              pageLoader.style.display = "flex";
+              setTimeout(function(){
+                window.location.hash = category.toLowerCase().replace(/\s+/g, '-');
+                renderCategories(document.getElementById("searchInput").value);
+                pageLoader.style.display = "none";
+              }, 500);
+            });
+            headerContainer.appendChild(seeMoreLink);
+          }
+          container.appendChild(headerContainer);
+          const grid = document.createElement("div");
+          grid.className = "category-projects";
+          let projectsToShow = hashCategory ? catProjects : catProjects.slice(0, 4);
+          projectsToShow.forEach(function(project, idx) {
+            const card = document.createElement("div");
+            card.className = "project-card";
+            card.setAttribute("data-project-id", project.projectId);
+            const headerDiv = document.createElement("div");
+            headerDiv.className = "project-header";
+            const logoImg = document.createElement("img");
+            logoImg.src = project.logo || "https://images.vexels.com/media/users/3/137617/isolated/preview/c45afb857e72b86e87baaf255f71ff37-geometric-logo-abstract-by-vexels.png";
+            logoImg.alt = "Project Logo";
+            logoImg.className = "project-logo";
+            const title = document.createElement("h3");
+            title.textContent = project.title;
+            headerDiv.appendChild(logoImg);
+            headerDiv.appendChild(title);
+            card.appendChild(headerDiv);
+            const desc = document.createElement("p");
+            desc.textContent = project.description;
+            card.appendChild(desc);
+            const infoDiv = document.createElement("div");
+            infoDiv.className = "project-info";
+            infoDiv.textContent = (project.school || "St Johns University") + " • " + (project.participants || participantRanges[idx % participantRanges.length]);
+            card.appendChild(infoDiv);
+            const tagsDiv = document.createElement("div");
+            tagsDiv.className = "tags";
+            project.tags.forEach(function(tag) {
+              const tagSpan = document.createElement("span");
+              tagSpan.className = "tag";
+              tagSpan.textContent = tag;
+              tagsDiv.appendChild(tagSpan);
+            });
+            card.appendChild(tagsDiv);
+            card.addEventListener("click", function() {
+              openModal(project, idx);
+            });
+            grid.appendChild(card);
+          });
+          container.appendChild(grid);
+        }
+      });
+    }
+    
+    document.getElementById("searchInput").addEventListener("input", function(e) {
+      renderCategories(e.target.value);
+    });
+    
+    window.addEventListener("hashchange", function() {
+      if (window.location.hash.startsWith("#project-")) {
+        checkDeepLink();
+      } else {
+        renderCategories(document.getElementById("searchInput").value);
+      }
+    });
+    
+    document.getElementById("newCommentForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const commentInput = document.getElementById("newCommentInput");
+      const text = commentInput.value.trim();
+      if (text) {
+        commentsData.unshift({ author: "John Doe", text: text, replies: [] });
+        renderComments(commentsData);
+        commentInput.value = "";
+      }
+    });
+    
+    document.getElementById("cancelNewComment").addEventListener("click", function() {
+      const commentInput = document.getElementById("newCommentInput");
+      commentInput.value = "";
+      commentInput.blur();
+    });
+    
+    /* ========================= */
+    /* DEEPLINK HANDLING */
+    /* ========================= */
+    function checkDeepLink() {
+      let hash = window.location.hash;
+      if (hash.startsWith("#project-")) {
+        let projectId = hash.replace("#project-", "");
+        let project = projects.find(p => String(p.projectId) === String(projectId));
+        if (project) {
+          openModal(project, 0);
+        } else {
+          console.error("Deep link project not found for ID: " + projectId);
+        }
+      }
+    }
+    
+    /* ========================= */
+    /* USER LOGIN & PROFILE FUNCTIONS */
+    /* ========================= */
+    const dashboardApiUrl = "https://sheet2api.com/v1/rkmbUqHQAC3C/submission-form-responses";
+    let currentUser = null;
+    const navbarLoginForm = document.getElementById("loginForm");
+    const navbarLoginArea = document.getElementById("navbarLoginArea");
+    
+    async function doLogin(email, password) {
+      try {
+        const response = await fetch(dashboardApiUrl);
+        const data = await response.json();
+        const userProjects = data.filter(function(item) {
+          return item.Email && item.Email.toLowerCase() === email && item.Password === password;
+        });
+        if (userProjects.length === 0) {
+          alert("Invalid credentials or no projects found.");
+        } else {
+          currentUser = {
+            firstName: userProjects[0]["First Name"],
+            lastName: userProjects[0]["Last Name"],
+            profilePicture: userProjects[0]["Profile Picture"],
+            email: userProjects[0].Email,
+            school: userProjects[0]["College or University Name"],
+            major: userProjects[0]["Major"]
+          };
+          localStorage.setItem("userEmail", email);
+          localStorage.setItem("userPassword", password);
+          localStorage.setItem("isLoggedIn", "true");
+          updateNavbarAfterLogin();
+        }
+      } catch (err) {
+        console.error("Error during login:", err);
+      }
+    }
+    
+    navbarLoginForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+      const password = document.getElementById("loginPassword").value.trim();
+      document.getElementById("pageLoader").style.display = "flex";
+      doLogin(email, password).then(function() {
+        document.getElementById("pageLoader").style.display = "none";
+      });
+    });
+    
+    function updateNavbarAfterLogin() {
+      navbarLoginArea.innerHTML = `
+        <div class="navbar-actions">
+          <button id="createBtn" class="create-btn">
+            <span class="create-icon"></span>
+            Create
+          </button>
+          <img src="https://i.imgur.com/3ityLS2.png" alt="Notifications" class="notification-icon" id="notificationIcon" />
+          <span class="user-name">${currentUser.firstName}</span>
+          <div id="profileDropdown" class="profile-dropdown">
+            ${renderUserAvatar(currentUser)}
+            <div id="profileMenu" class="profile-menu">
+              <div class="dropdown-item" id="profileMenuItem">Profile</div>
+              <div class="dropdown-item" id="dashboardMenuItem"><a href="${hyperlinks['Dashboard'] || '#'}">Dashboard</a></div>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-item" id="logoutMenuItem">Logout</div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById("profileDropdown").addEventListener("click", function(e) {
+        const menu = document.getElementById("profileMenu");
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+        e.stopPropagation();
+      });
+      document.getElementById("profileMenuItem").addEventListener("click", function(e) {
+        e.stopPropagation();
+        openProfileModal();
+      });
+      document.getElementById("logoutMenuItem").addEventListener("click", function(e) {
+        e.stopPropagation();
+        openLogoutModal();
+      });
+      document.getElementById("createBtn").addEventListener("click", function(e) {
+        window.location.href = hyperlinks["Create"] || "#";
+      });
+      document.getElementById("notificationIcon").addEventListener("click", function(e) {
+        openNotificationModal();
+        e.stopPropagation();
+      });
+    }
+    
+    function renderUserAvatar(user) {
+      if (user.profilePicture && user.profilePicture.trim() !== "") {
+        return `<div class="navbar-profile"><img src="${user.profilePicture}" alt="${user.firstName} ${user.lastName}" /></div>`;
+      } else {
+        return `<div class="navbar-profile">${getInitials(user.firstName, user.lastName)}</div>`;
+      }
+    }
+    
+    function getInitials(first, last) {
+      let initials = "";
+      if (first && first.length > 0) initials += first[0].toUpperCase();
+      if (last && last.length > 0) initials += last[0].toUpperCase();
+      return initials;
+    }
+    
+    function logout() {
+      localStorage.clear();
+      currentUser = null;
+      navbarLoginArea.innerHTML = `
+        <form id="loginForm">
+          <input type="text" id="loginEmail" placeholder="Email" required>
+          <input type="password" id="loginPassword" placeholder="Password" required>
+          <button type="submit">Login</button>
+        </form>
+      `;
+      document.getElementById("loginForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+        const password = document.getElementById("loginPassword").value.trim();
+        doLogin(email, password);
+      });
+    }
+    
+    window.addEventListener("click", function(e) {
+      if (e.target === document.getElementById("profileModal")) {
+        document.getElementById("profileModal").style.display = "none";
+      }
+    });
+    
+    window.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("pageLoader").style.display = "flex";
+      const loadingMessages = [
+        "Warming up the servers...",
+        "Fetching all the memes...",
+        "Summoning unicorns...",
+        "Reticulating splines...",
+        "Aligning your pixels...",
+        "Brewing some coffee..."
+      ];
+      let msgIndex = 0;
+      setInterval(function() {
+        document.getElementById("loadingMessage").textContent = loadingMessages[msgIndex];
+        msgIndex = (msgIndex + 1) % loadingMessages.length;
+      }, 3000);
+      setTimeout(function() {
+        if (localStorage.getItem("isLoggedIn") === "true") {
+          const savedEmail = localStorage.getItem("userEmail");
+          const savedPassword = localStorage.getItem("userPassword");
+          if (savedEmail && savedPassword) {
+            doLogin(savedEmail, savedPassword).then(function() {
+              document.getElementById("pageLoader").style.display = "none";
+            });
+          } else {
+            document.getElementById("pageLoader").style.display = "none";
+          }
+        } else {
+          document.getElementById("pageLoader").style.display = "none";
+        }
+      }, 1000);
+    });
+  </script>
+  
+  <script>
+    window.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("logoutModalClose").addEventListener("click", function() {
+        document.getElementById("logoutModal").style.display = "none";
+      });
+      document.getElementById("cancelLogoutBtn").addEventListener("click", function() {
+        document.getElementById("logoutModal").style.display = "none";
+      });
+      document.getElementById("confirmLogoutBtn").addEventListener("click", function() {
+        logout();
+        document.getElementById("logoutModal").style.display = "none";
+      });
+      document.getElementById("profileModalClose").addEventListener("click", function() {
+        document.getElementById("profileModal").style.display = "none";
+      });
+      document.getElementById("createModalClose").addEventListener("click", function() {
+        document.getElementById("createModal").style.display = "none";
+      });
+      document.getElementById("notificationModalClose").addEventListener("click", function() {
+        document.getElementById("notificationModal").style.display = "none";
+      });
+    });
+    
+    function openLogoutModal() {
+      document.getElementById("logoutModal").style.display = "block";
+    }
+    function openProfileModal() {
+      const profileContent = document.getElementById("profileContent");
+      profileContent.innerHTML = `
+        <div style="text-align:center; margin-bottom:15px;">
+          ${currentUser && currentUser.profilePicture && currentUser.profilePicture.trim() !== "" ? 
+            `<img src="${currentUser.profilePicture}" alt="${currentUser.firstName} ${currentUser.lastName}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">` : 
+            `<div style="width:80px; height:80px; border-radius:50%; background:#ccc; display:flex; align-items:center; justify-content:center; font-size:2em; color:#fff;">${currentUser ? currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0) : ""}</div>`
+          }
+        </div>
+        <p><strong>Name:</strong> ${currentUser ? currentUser.firstName + " " + currentUser.lastName : ""}</p>
+        <p><strong>Email:</strong> ${currentUser ? currentUser.email : ""}</p>
+        <p><strong>University:</strong> ${currentUser ? currentUser.school : ""}</p>
+        <p><strong>Major:</strong> ${currentUser ? currentUser.major : ""}</p>
+      `;
+      document.getElementById("profileModal").style.display = "block";
+    }
+    function openCreateModal() {
+      document.getElementById("createModal").style.display = "block";
+    }
+    function openNotificationModal() {
+      document.getElementById("notificationModal").style.display = "block";
+    }
+  </script>
+  
+  <script>
+    window.addEventListener("DOMContentLoaded", function() {
+      document.querySelectorAll(".modal .close").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          this.parentElement.parentElement.style.display = "none";
+        });
+      });
+    });
+  </script>
+  
+  <!-- ALL SOCIALS MODAL -->
+  <script>
+    function openAllSocialsModal(socials, projectType) {
+      const container = document.getElementById("allSocialsContainer");
+      container.innerHTML = "";
+      const validSocials = socials.filter(s => s.link && s.link.trim() !== "");
+      if (validSocials.length === 0) {
+        container.innerHTML = `<p>${projectType} has no social associated with it</p>`;
+      } else {
+        validSocials.forEach(social => {
+          const a = document.createElement("a");
+          a.href = "#";
+          a.style.backgroundColor = "#aaa";
+          a.style.color = "#fff";
+          a.style.textDecoration = "none";
+          a.style.padding = "8px 12px";
+          a.style.borderRadius = "4px";
+          a.style.display = "block";
+          a.style.marginBottom = "10px";
+          a.innerHTML = `<img src="${social.icon}" alt="${social.name}" style="width:24px; height:24px; vertical-align: middle; margin-right:8px;"> ${social.name}`;
+          a.addEventListener("click", function(e) {
+            e.preventDefault();
+            window.open(social.link, "_blank");
+          });
+          container.appendChild(a);
+        });
+      }
+      document.getElementById("allSocialsModal").style.display = "block";
+    }
+    
+    document.getElementById("allSocialsModalClose").addEventListener("click", function() {
+      document.getElementById("allSocialsModal").style.display = "none";
+    });
+    window.addEventListener("click", function(e) {
+      if(e.target == document.getElementById("allSocialsModal")) {
+        document.getElementById("allSocialsModal").style.display = "none";
+      }
+    });
+  </script>
+  
+  <footer>
+    &copy; 2025 College Project Discovery Platform. All rights reserved.
+  </footer>
+  
+</body>
+</html>
