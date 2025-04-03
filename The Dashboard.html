@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard - Activity Hub</title>
+  <!-- Flatpickr CSS for date/time fields -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ------------------------- */
+    /* BASE STYLES & RESET */
+    /* ------------------------- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; color: #333; line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    
+    /* ------------------------- */
+    /* PAGE LOADER */
+    /* ------------------------- */
+    #pageLoader {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    #loadingMessage {
+      margin-top: 15px;
+      font-size: 1.2em;
+      color: #333;
+    }
+    
+    /* ------------------------- */
+    /* NAVBAR (Fixed) */
+    /* ------------------------- */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #0066cc;
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      z-index: 1000;
+      flex-wrap: wrap;
+    }
+    .navbar-brand h1 {
+      font-size: 1.8em;
+    }
+    /* Initially shows login form */
+    .navbar-login {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .navbar-login form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .navbar-login input[type="text"],
+    .navbar-login input[type="password"] {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      color: #333;
+      font-size: 0.95em;
+    }
+    .navbar-login input[type="text"]::placeholder,
+    .navbar-login input[type="password"]::placeholder {
+      color: #999;
+    }
+    .navbar-login button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #28a745;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .navbar-login button:hover { background: #218838; }
+    
+    /* Navbar Actions (shown after login) */
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .create-btn {
+      background-color: #28a745 !important;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .create-btn:hover { background-color: #218838 !important; }
+    .notification-icon {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      filter: brightness(0) invert(1);
+    }
+    .user-name {
+      font-size: 1em;
+      font-weight: 600;
+      margin-right: 5px;
+    }
+    
+    /* ------------------------- */
+    /* PROFILE DROPDOWN (shown after login) */
+    /* ------------------------- */
+    .profile-dropdown {
+      position: relative;
+      cursor: pointer;
+    }
+    .navbar-profile {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #fff;
+      font-size: 1em;
+      overflow: hidden;
+    }
+    .navbar-profile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .profile-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 50px;
+      background: #fff;
+      color: #333;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      width: 200px;
+      z-index: 100;
+    }
+    .profile-menu .dropdown-item {
+      padding: 10px 15px;
+    }
+    .profile-menu .dropdown-item:hover { background: #f0f0f0; }
+    .profile-menu .dropdown-divider {
+      height: 1px;
+      background: #ccc;
+      margin: 5px 0;
+    }
+    
+    /* ------------------------- */
+    /* DASHBOARD & OTHER CONTAINERS */
+    /* ------------------------- */
+    /* Always visible; when logged out, shows a placeholder message */
+    #dashboardContainer {
+      margin-top: 70px; /* space for fixed navbar */
+      display: block;
+      padding: 20px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #dashboardPlaceholder {
+      text-align: center;
+      font-size: 1.2em;
+      color: #777;
+    }
+    
+    /* When logged in, the dashboard content will be inserted here via JavaScript */
+    .dashboard-heading {
+      text-align: left;
+      font-size: 1.8em;
+      margin-bottom: 10px;
+    }
+    .dashboard-title {
+      margin-bottom: 20px;
+      padding-left: 10px;
+      border-left: 4px solid #0066cc;
+      color: #333;
+    }
+    
+    .search-container {
+      margin: 20px auto;
+      max-width: 800px;
+      text-align: center;
+      padding: 0 10px;
+    }
+    .search-container input[type="text"] {
+      width: 100%;
+      max-width: 500px;
+      padding: 12px;
+      font-size: 1em;
+      background: #fff;
+      border: 1px solid #ccc;
+      color: #333;
+      border-radius: 4px;
+      transition: border-color 0.3s;
+    }
+    .search-container input[type="text"]:focus { border-color: #0066cc; outline: none; }
+    #projectsGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    
+    /* ------------------------- */
+    /* PROJECT CARD */
+    /* ------------------------- */
+    .project-card {
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 15px;
+      cursor: pointer;
+      position: relative;
+      transition: box-shadow 0.2s;
+    }
+    .project-card:hover { box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .project-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .project-logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-right: 10px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+    }
+    .project-header h3 {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 1.2em;
+      margin: 0;
+    }
+    .project-card p {
+      margin-bottom: 15px;
+      font-size: 0.95em;
+      color: #555;
+    }
+    .project-info {
+      font-size: 0.8em;
+      color: #555;
+      margin-top: 8px;
+    }
+    .tags { margin-top: 10px; }
+    .tag {
+      display: inline-block;
+      background: #eee;
+      color: #555;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 0.8em;
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+    
+    /* ------------------------- */
+    /* CARD MENU & DROPDOWN */
+    /* ------------------------- */
+    .card-menu-container {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      z-index: 10;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .card-menu-container:hover { background-color: rgba(0,0,0,0.05); }
+    .card-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .menu-dot {
+      width: 4px;
+      height: 4px;
+      background: #888;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 20px;
+      right: 0;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      padding: 5px 0;
+      font-size: 0.9em;
+      z-index: 20;
+      width: 140px;
+    }
+    .dropdown-item { padding: 8px 12px; cursor: pointer; }
+    .dropdown-item:hover { background: #f0f0f0; }
+    
+    /* ------------------------- */
+    /* MODALS */
+    /* ------------------------- */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 5px;
+      position: relative;
+      color: #333;
+    }
+    .close {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover,
+    .close:focus { color: #000; text-decoration: none; }
+    
+    /* Project Details Modal */
+    #modalHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #modalTitleContainer {
+      display: flex;
+      align-items: center;
+    }
+    .visit-button {
+      background: #065fd4;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+    #modalProjectInfo {
+      margin-top: 15px;
+      font-size: 0.9em;
+      color: #555;
+    }
+    #modalProjectInfo > div {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+    }
+    #modalProjectInfo img.icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      vertical-align: middle;
+      filter: grayscale(100%) brightness(0.6);
+    }
+    .social-links {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .social-icon {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      background: #aaa;
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+    }
+    
+    /* Event Creation Modal */
+    #eventModal {
+      display: none;
+      position: fixed;
+      z-index: 1100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: rgba(0,0,0,0.5);
+    }
+    #eventModal .modal-content {
+      background: #fff;
+      margin: 5% auto;
+      padding: 2rem;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 8px;
+      position: relative;
+      color: #1c1c1c;
+      font-family: 'Open Sans', Arial, sans-serif;
+    }
+    #eventModal h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+    }
+    #eventModal label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    #eventModal input[type="text"],
+    #eventModal input[type="url"],
+    #eventModal textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d0e2ea;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+    #eventModal textarea { resize: none; }
+    .file-upload-wrapper {
+      position: relative;
+      margin-bottom: 1rem;
+      display: inline-block;
+    }
+    .file-upload-label {
+      background: #007BFF;
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      max-width: 200px;
+      display: inline-block;
+    }
+    .file-upload-label:hover { background: #005BB5; }
+    .file-upload-input {
+      opacity: 0;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    #bannerPreview {
+      display: none;
+      margin-top: 1rem;
+      max-width: 150px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #eventModal input[type="hidden"] { display: none; }
+    #eventModal button[type="submit"] {
+      background: #007BFF;
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    #eventModal button[type="submit"]:hover { background: #005BB5; }
+    #confirmationMessage {
+      display: none;
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 1.1em;
+      color: #155724;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      padding: 1rem;
+      border-radius: 6px;
+    }
+    
+    /* Logout Modal Button Styles */
+    #logoutModal button {
+      padding: 10px 20px;
+      margin: 10px 5px 0;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    #confirmLogoutBtn {
+      background-color: #cc0000;
+      color: #fff;
+    }
+    #confirmLogoutBtn:hover { background-color: #b30000; }
+    #cancelLogoutBtn {
+      background-color: #ccc;
+      color: #333;
+    }
+    #cancelLogoutBtn:hover { background-color: #bbb; }
+    
+    /* Access Management Modal */
+    #accessModal {
+      display: none;
+      position: fixed;
+      z-index: 1200;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: rgba(0,0,0,0.5);
+    }
+    #accessModal .modal-content {
+      background: #fff;
+      margin: 5% auto;
+      padding: 1.5rem;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 8px;
+      position: relative;
+      color: #333;
+    }
+    #accessModal h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    #accessModal label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    #accessModal input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #accessModal .admin-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.5rem;
+    }
+    .admin-card {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem;
+      border-bottom: 1px solid #eee;
+    }
+    .admin-card:last-child { border-bottom: none; }
+    .admin-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .admin-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .admin-info { font-size: 0.9em; }
+    #searchResults {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 0.5rem;
+      background: #fff;
+    }
+    .search-result {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+    .search-result:hover { background: #f0f0f0; }
+    .result-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .result-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .result-avatar div {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9em;
+      color: #fff;
+    }
+    #accessSaveBtn {
+      background: #065fd4;
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1rem;
+    }
+    #accessSaveBtn:hover { background: #054a9e; }
+    #noAdminsMessage { text-align: center; margin-bottom: 1rem; color: #555; }
+    
+    /* ------------------------- */
+    /* LOADING ANIMATION (for content loading) */
+    /* ------------------------- */
+    .loading-animation {
+      width: 40px;
+      height: 40px;
+      background: #065fd4;
+      border-radius: 50%;
+      animation: dance 1s infinite ease-in-out;
+    }
+    @keyframes dance {
+      0% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(180deg); }
+      100% { transform: translateY(0) rotate(360deg); }
+    }
+    
+    /* ------------------------- */
+    /* RESPONSIVE STYLES */
+    /* ------------------------- */
+    @media screen and (max-width: 768px) {
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .navbar-brand h1 {
+        font-size: 1.6em;
+      }
+      .navbar-actions {
+        width: 100%;
+        justify-content: space-around;
+        margin-top: 10px;
+      }
+      #dashboardContainer {
+        margin-top: 120px;
+        padding: 10px;
+      }
+      .search-container input[type="text"] {
+        width: 90%;
+        max-width: none;
+      }
+      #projectsGrid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+      .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: 10px;
+        padding: 15px;
+      }
+      .navbar-login input[type="text"],
+      .navbar-login input[type="password"] {
+        width: 100%;
+      }
+    }
+    
+    /* For very small screens (max-width: 480px), prevent navbar stacking.
+       Hide the user's first name and force navbar items to remain on one row. */
+    @media screen and (max-width: 480px) {
+      nav {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+      }
+      .navbar-actions {
+        flex-wrap: nowrap;
+        gap: 5px;
+      }
+      .user-name {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- PAGE LOADER WITH HUMOROUS MESSAGES -->
+  <div id="pageLoader">
+    <div class="loading-animation"></div>
+    <div id="loadingMessage">Warming up the servers...</div>
+  </div>
+  
+  <!-- NAVBAR WITH LOGIN/PROFILE DROPDOWN, CREATE, AND NOTIFICATION ICONS -->
+  <nav>
+    <div class="navbar-brand">
+      <h1>Activity Hub</h1>
+    </div>
+    <div class="navbar-login" id="navbarLoginArea">
+      <!-- Initially shows login form -->
+      <form id="loginForm">
+        <input type="text" id="loginEmail" placeholder="Email" required />
+        <input type="password" id="loginPassword" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </nav>
+  
+  <!-- DASHBOARD SECTION -->
+  <div id="dashboardContainer">
+    <!-- When logged out, show placeholder -->
+    <p id="dashboardPlaceholder" style="text-align: center; font-size: 1.2em; color: #777;">
+      Login to see dashboard.
+    </p>
+  </div>
+  
+  <!-- PROJECT DETAILS MODAL -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="projectModalClose">&times;</span>
+      <div id="modalHeader">
+        <div id="modalTitleContainer"></div>
+        <button class="visit-button" id="visitButton">Visit</button>
+      </div>
+      <p id="modalDescription" style="margin-top:15px;"></p>
+      <div id="modalProjectInfo"></div>
+    </div>
+  </div>
+  
+  <!-- EVENT CREATION MODAL -->
+  <div id="eventModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="eventModalClose">&times;</span>
+      <h2>Create an Event</h2>
+      <form id="eventForm" action="https://docs.google.com/forms/d/e/1FAIpQLScbBpKY_2KSr6OIBkZALT-4ZN8YPONygcJVhU5CFKFUWKKmWg/formResponse" method="POST" target="hidden_iframe">
+        <label for="eventName">Event Name:</label>
+        <input type="text" id="eventName" placeholder="Enter event name" required />
+  
+        <label for="eventDateTime">Date & Time:</label>
+        <input type="text" id="eventDateTime" placeholder="Select date & time" required />
+  
+        <label for="location">Location:</label>
+        <input type="text" id="location" placeholder="Enter location" required />
+  
+        <label for="description">Description:</label>
+        <textarea id="description" rows="4" placeholder="Enter event description" required></textarea>
+  
+        <label>
+          <input type="checkbox" id="rsvpToggle" /> Include RSVP Form
+        </label>
+        <div id="rsvpSection" style="display:none;">
+          <label for="rsvpForm">RSVP Form URL:</label>
+          <input type="text" id="rsvpForm" placeholder="Enter RSVP form URL" />
+          <label for="rsvpDeadline">RSVP Deadline:</label>
+          <input type="text" id="rsvpDeadline" placeholder="Select RSVP deadline" />
+        </div>
+  
+        <label for="eventBanner">Event Banner (Image File):</label>
+        <div class="file-upload-wrapper">
+          <label class="file-upload-label" for="eventBanner">Upload Banner</label>
+          <input type="file" id="eventBanner" class="file-upload-input" accept="image/*" />
+        </div>
+        <img id="bannerPreview" alt="Image Preview" />
+  
+        <!-- Hidden fields -->
+        <input type="hidden" id="eventBannerUrl" />
+        <input type="hidden" id="eventID" />
+        <input type="hidden" id="projectID" />
+        <button type="submit">Create Event</button>
+      </form>
+      <div id="loadingAnimation" class="loading-animation" style="margin:20px auto; display:none;"></div>
+      <iframe name="hidden_iframe" style="display:none;"></iframe>
+      <div id="confirmationMessage"></div>
+    </div>
+  </div>
+  
+  <!-- ACCESS MANAGEMENT MODAL -->
+  <div id="accessModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="accessModalClose">&times;</span>
+      <h2>Manage Access</h2>
+      <div id="currentAdmins" class="admin-list"></div>
+      <div id="noAdminsMessage" style="display:none; text-align:center; margin-bottom:1rem;">No admins added yet.</div>
+      <label for="adminSearch">Search Users to Add:</label>
+      <input type="text" id="adminSearch" placeholder="Enter name or email" />
+      <div id="searchResults"></div>
+      <button id="accessSaveBtn">Save Changes</button>
+    </div>
+  </div>
+  
+  <!-- PROFILE MODAL -->
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="profileModalClose">&times;</span>
+      <h2>Your Profile</h2>
+      <div id="profileContent">
+        <!-- Profile details will be injected here -->
+      </div>
+    </div>
+  </div>
+  
+  <!-- LOGOUT CONFIRMATION MODAL -->
+  <div id="logoutModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="logoutModalClose">&times;</span>
+      <h2>Confirm Logout</h2>
+      <p>Are you sure you want to log out?</p>
+      <button id="confirmLogoutBtn">Yes, log out</button>
+      <button id="cancelLogoutBtn">Cancel</button>
+    </div>
+  </div>
+  
+  <!-- CREATE MODAL (Placeholder) -->
+  <div id="createModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="createModalClose">&times;</span>
+      <h2>Create</h2>
+      <p>This feature is coming soon. Stay tuned!</p>
+    </div>
+  </div>
+  
+  <!-- NOTIFICATION MODAL -->
+  <div id="notificationModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="notificationModalClose">&times;</span>
+      <h2>Notifications</h2>
+      <p>There are no notifications yet, but you'll see them here whenever you do get any!</p>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    /* ------------------------- */
+    /* GLOBAL VARIABLES & DOM ELEMENTS */
+    /* ------------------------- */
+    const dashboardApiUrl = "https://sheet2api.com/v1/rkmbUqHQAC3C/submission-form-responses";
+    let projects = [];
+    let currentAdmins = [];
+    let allUsers = [];
+    let currentUser = null;
+  
+    const loginFormEl = document.getElementById("loginForm");
+    const dashboardContainerEl = document.getElementById("dashboardContainer");
+    let projectsGridEl = null; // to be re-assigned upon login
+    let searchInputEl = null;  // to be re-assigned upon login
+    const navbarLoginArea = document.getElementById("navbarLoginArea");
+  
+    // Project Details Modal elements
+    const projectModal = document.getElementById("modal");
+    const projectModalClose = document.getElementById("projectModalClose");
+    const modalTitleContainer = document.getElementById("modalTitleContainer");
+    const modalDescription = document.getElementById("modalDescription");
+    const modalProjectInfo = document.getElementById("modalProjectInfo");
+    const visitButton = document.getElementById("visitButton");
+  
+    // Event Modal elements
+    const eventModal = document.getElementById("eventModal");
+    const eventModalClose = document.getElementById("eventModalClose");
+    const eventForm = document.getElementById("eventForm");
+    const loadingAnimation = document.getElementById("loadingAnimation");
+    const confirmationMessage = document.getElementById("confirmationMessage");
+  
+    // Access Modal elements
+    const accessModal = document.getElementById("accessModal");
+    const accessModalClose = document.getElementById("accessModalClose");
+    const currentAdminsDiv = document.getElementById("currentAdmins");
+    const noAdminsMessage = document.getElementById("noAdminsMessage");
+    const adminSearchInput = document.getElementById("adminSearch");
+    const searchResultsDiv = document.getElementById("searchResults");
+    const accessSaveBtn = document.getElementById("accessSaveBtn");
+  
+    // Profile Modal elements
+    const profileModal = document.getElementById("profileModal");
+    const profileModalClose = document.getElementById("profileModalClose");
+    const profileContent = document.getElementById("profileContent");
+  
+    // Logout Modal elements
+    const logoutModal = document.getElementById("logoutModal");
+    const logoutModalClose = document.getElementById("logoutModalClose");
+    const confirmLogoutBtn = document.getElementById("confirmLogoutBtn");
+    const cancelLogoutBtn = document.getElementById("cancelLogoutBtn");
+  
+    // Create Modal elements
+    const createModal = document.getElementById("createModal");
+    const createModalClose = document.getElementById("createModalClose");
+  
+    // Notification Modal elements
+    const notificationModal = document.getElementById("notificationModal");
+    const notificationModalClose = document.getElementById("notificationModalClose");
+  
+    // Page Loader element
+    const pageLoader = document.getElementById("pageLoader");
+  
+    /* ------------------------- */
+    /* UTILITY FUNCTIONS */
+    /* ------------------------- */
+    function getFormattedTimestamp() {
+      const now = new Date();
+      const YYYY = now.getFullYear();
+      const MM = String(now.getMonth() + 1).padStart(2, '0');
+      const DD = String(now.getDate()).padStart(2, '0');
+      const HH = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      return `${YYYY}${MM}${DD}${HH}${mm}${ss}`;
+    }
+    function getRandomColor() {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) { color += letters[Math.floor(Math.random() * 16)]; }
+      return color;
+    }
+    function getInitials(first, last) {
+      let initials = "";
+      if (first && first.length > 0) initials += first[0].toUpperCase();
+      if (last && last.length > 0) initials += last[0].toUpperCase();
+      return initials;
+    }
+    function renderUserAvatar(user) {
+      if (user.profilePicture && user.profilePicture.trim() !== "") {
+        return `<div class="navbar-profile"><img src="${user.profilePicture}" alt="${user.firstName} ${user.lastName}" /></div>`;
+      } else {
+        return `<div class="navbar-profile">${getInitials(user.firstName, user.lastName)}</div>`;
+      }
+    }
+  
+    /* ------------------------- */
+    /* FLATPICKR INITIALIZATION */
+    /* ------------------------- */
+    flatpickr("#eventDateTime", {
+      enableTime: true,
+      altInput: true,
+      altFormat: "F j, Y, h:i K",
+      dateFormat: "Y-m-d H:i",
+      minDate: "today"
+    });
+    flatpickr("#rsvpDeadline", {
+      altInput: true,
+      altFormat: "F j, Y",
+      dateFormat: "Y-m-d",
+      minDate: "today"
+    });
+  
+    /* ------------------------- */
+    /* RSVP TOGGLE */
+    /* ------------------------- */
+    document.getElementById("rsvpToggle").addEventListener("change", function() {
+      document.getElementById("rsvpSection").style.display = this.checked ? "block" : "none";
+    });
+  
+    /* ------------------------- */
+    /* IMAGE PREVIEW */
+    /* ------------------------- */
+    document.getElementById("eventBanner").addEventListener("change", function() {
+      const file = this.files[0];
+      const preview = document.getElementById("bannerPreview");
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.src = "";
+        preview.style.display = "none";
+      }
+    });
+  
+    /* ------------------------- */
+    /* EVENT FORM SUBMISSION */
+    /* ------------------------- */
+    eventForm.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const eventID = "E-" + getFormattedTimestamp();
+      document.getElementById("eventID").value = eventID;
+      loadingAnimation.style.display = "block";
+  
+      const bannerFile = document.getElementById("eventBanner").files[0];
+      let bannerUrl = "";
+      if (bannerFile) {
+        const imgurFormData = new FormData();
+        imgurFormData.append('image', bannerFile);
+        try {
+          const response = await fetch('https://api.imgur.com/3/image', {
+            method: 'POST',
+            headers: { Authorization: 'Client-ID 4693c5376af54cb' },
+            body: imgurFormData
+          });
+          const data = await response.json();
+          if (data.success) { bannerUrl = data.data.link; }
+        } catch(error) {
+          console.error("Imgur upload failed:", error);
+        }
+        if (bannerFile && !bannerUrl) {
+          const proceed = confirm("Image upload failed. Proceed without an image?");
+          if (!proceed) return;
+        }
+      }
+      document.getElementById("eventBannerUrl").value = bannerUrl;
+  
+      const googleFormData = new FormData();
+      googleFormData.append('entry.1780664616', document.getElementById("eventName").value);
+      googleFormData.append('entry.2115639018', document.getElementById("eventDateTime").value);
+      googleFormData.append('entry.2054491978', document.getElementById("location").value);
+      googleFormData.append('entry.11920292', document.getElementById("description").value);
+      googleFormData.append('entry.840189555', document.getElementById("rsvpForm").value);
+      googleFormData.append('entry.1675756677', document.getElementById("rsvpDeadline").value);
+      googleFormData.append('entry.1164060085', bannerUrl);
+      googleFormData.append('entry.372043330', document.getElementById("projectID").value);
+      googleFormData.append('entry.443481396', eventID);
+  
+      fetch("https://docs.google.com/forms/d/e/1FAIpQLScbBpKY_2KSr6OIBkZALT-4ZN8YPONygcJVhU5CFKFUWKKmWg/formResponse", {
+        method: "POST",
+        mode: "no-cors",
+        body: googleFormData
+      });
+  
+      setTimeout(() => {
+        loadingAnimation.style.display = "none";
+        eventForm.style.display = "none";
+        confirmationMessage.innerHTML = "<p>Your event has been submitted successfully!</p><button id='newEventBtn'>Submit Another Event</button>";
+        confirmationMessage.style.display = "block";
+      }, 2000);
+    });
+    confirmationMessage.addEventListener("click", function(e) {
+      if (e.target.id === "newEventBtn") {
+        eventForm.reset();
+        eventForm.style.display = "block";
+        document.getElementById("bannerPreview").style.display = "none";
+        document.getElementById("rsvpSection").style.display = "none";
+        confirmationMessage.style.display = "none";
+      }
+    });
+  
+    /* ------------------------- */
+    /* ACCESS MANAGEMENT MODAL FUNCTIONS */
+    /* ------------------------- */
+    function openAccessModal() {
+      currentAdmins = [];
+      renderCurrentAdmins();
+      adminSearchInput.value = "";
+      searchResultsDiv.innerHTML = "";
+      accessModal.style.display = "block";
+    }
+    accessModalClose.addEventListener("click", () => { accessModal.style.display = "none"; });
+    window.addEventListener("click", (event) => { if (event.target === accessModal) { accessModal.style.display = "none"; } });
+    function renderCurrentAdmins() {
+      currentAdminsDiv.innerHTML = "";
+      if (currentAdmins.length === 0) {
+        noAdminsMessage.style.display = "block";
+      } else {
+        noAdminsMessage.style.display = "none";
+        currentAdmins.forEach(admin => {
+          const adminCard = document.createElement("div");
+          adminCard.className = "admin-card";
+          const avatarDiv = document.createElement("div");
+          avatarDiv.className = "admin-avatar";
+          if (admin.profilePicture) {
+            const img = document.createElement("img");
+            img.src = admin.profilePicture;
+            img.alt = admin.firstName + " " + admin.lastName;
+            avatarDiv.appendChild(img);
+          } else {
+            avatarDiv.style.backgroundColor = getRandomColor();
+            avatarDiv.textContent = getInitials(admin.firstName, admin.lastName);
+          }
+          adminCard.appendChild(avatarDiv);
+          const infoDiv = document.createElement("div");
+          infoDiv.className = "admin-info";
+          infoDiv.textContent = admin.firstName + " " + admin.lastName;
+          adminCard.appendChild(infoDiv);
+          currentAdminsDiv.appendChild(adminCard);
+        });
+      }
+    }
+    adminSearchInput.addEventListener("input", function() {
+      const term = this.value.trim().toLowerCase();
+      searchResultsDiv.innerHTML = "";
+      if (term === "") return;
+      const results = allUsers.filter(user =>
+        (user.firstName + " " + user.lastName).toLowerCase().includes(term) ||
+        user.email.toLowerCase().includes(term)
+      );
+      results.forEach(user => {
+        const resultDiv = document.createElement("div");
+        resultDiv.className = "search-result";
+        let avatar;
+        if (user.profilePicture) {
+          avatar = document.createElement("img");
+          avatar.src = user.profilePicture;
+          avatar.alt = user.firstName + " " + user.lastName;
+          avatar.className = "result-avatar";
+        } else {
+          avatar = document.createElement("div");
+          avatar.className = "result-avatar";
+          avatar.style.backgroundColor = getRandomColor();
+          avatar.style.display = "flex";
+          avatar.style.alignItems = "center";
+          avatar.style.justifyContent = "center";
+          avatar.style.color = "#fff";
+          avatar.style.fontSize = "0.9em";
+          avatar.textContent = getInitials(user.firstName, user.lastName);
+        }
+        resultDiv.appendChild(avatar);
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = user.firstName + " " + user.lastName;
+        resultDiv.appendChild(nameSpan);
+        resultDiv.addEventListener("click", () => {
+          if (!currentAdmins.find(a => a.userId === user.userId)) {
+            currentAdmins.push(user);
+            renderCurrentAdmins();
+          }
+          searchResultsDiv.innerHTML = "";
+          adminSearchInput.value = "";
+        });
+        searchResultsDiv.appendChild(resultDiv);
+      });
+    });
+    accessSaveBtn.addEventListener("click", async () => {
+      const projID = document.getElementById("projectID").value;
+      const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSfd2QJzU-6_59SWSxadiXDcnfOq2FjBB_h18xLJ60MP6wdH4Q/formResponse";
+      const submissions = currentAdmins.map(admin => {
+        const formData = new FormData();
+        formData.append('entry.1896178840', projID);
+        formData.append('entry.481190008', admin.userId);
+        formData.append('entry.1832045415', "admin");
+        return fetch(formURL, { method: "POST", mode: "no-cors", body: formData });
+      });
+      await Promise.all(submissions);
+      alert("The selected admin(s) were successfully added as an admin.");
+      accessModal.style.display = "none";
+    });
+  
+    /* ------------------------- */
+    /* DASHBOARD & PROJECT MODAL FUNCTIONS */
+    /* ------------------------- */
+    function doLogin(email, password) {
+      fetch(dashboardApiUrl)
+        .then(res => res.json())
+        .then(data => {
+          const userProjects = data.filter(item =>
+            item.Email && item.Email.toLowerCase() === email && item.Password === password
+          );
+          if (userProjects.length === 0) {
+            alert("Invalid credentials or no projects found.");
+          } else {
+            projects = userProjects.map(item => ({
+              projectId: item["Project ID"] || "",
+              title: item["Project Title"] || "Untitled Project",
+              description: item["Tagline"] || "",
+              modalDescription: item["Description"] || "",
+              category: item["Project Type"] || "Uncategorized",
+              logo: item["Logo URL"] || "",
+              demoLink: item["Demo Link"] || "",
+              contactEmail: item[" Project Contact Email"] || item["Project Contact Email"] || "",
+              participants: item["Number of participants"] || "N/A",
+              school: item["College or University Name"] || "Unknown School",
+              tags: item["Industry"] ? item["Industry"].split(",").map(s => s.trim()) : [],
+              instagram: item["Instagram"] || "",
+              linkedIn: item["LinkedIn"] || "",
+              youtube: item["YouTube"] || "",
+              tiktok: item["TikTok"] || "",
+              github: item["GitHub"] || "",
+              firstName: item["First Name"] || "",
+              lastName: item["Last Name"] || "",
+              profilePicture: item["Profile Picture"] || "",
+              email: item.Email || "",
+              major: item["Major"] || "Undeclared"
+            }));
+            currentUser = {
+              firstName: projects[0].firstName,
+              lastName: projects[0].lastName,
+              profilePicture: projects[0].profilePicture,
+              email: projects[0].email,
+              school: projects[0].school,
+              major: projects[0].major
+            };
+            localStorage.setItem("userEmail", email);
+            localStorage.setItem("userPassword", password);
+            localStorage.setItem("isLoggedIn", "true");
+            // Replace login form with navbar actions and update dashboard content.
+            navbarLoginArea.innerHTML = `
+              <div class="navbar-actions">
+                <button id="createBtn" class="create-btn">Create</button>
+                <img src="https://i.imgur.com/3ityLS2.png" alt="Notifications" class="notification-icon" id="notificationIcon" />
+                <span class="user-name">${currentUser.firstName}</span>
+                <div id="profileDropdown" class="profile-dropdown">
+                  ${renderUserAvatar(currentUser)}
+                  <div id="profileMenu" class="profile-menu">
+                    <div class="dropdown-item" id="profileMenuItem">Profile</div>
+                    <div class="dropdown-item" id="dashboardMenuItem"><a href="#">Dashboard</a></div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" id="logoutMenuItem">Logout</div>
+                  </div>
+                </div>
+              </div>
+            `;
+            // Attach event listener to toggle the profile dropdown
+            document.getElementById("profileDropdown").addEventListener("click", function(e) {
+              const menu = document.getElementById("profileMenu");
+              menu.style.display = menu.style.display === "block" ? "none" : "block";
+              e.stopPropagation();
+            });
+            // Create button event
+            document.getElementById("createBtn").addEventListener("click", function(e) {
+              openCreateModal();
+              e.stopPropagation();
+            });
+            // Notification icon event
+            document.getElementById("notificationIcon").addEventListener("click", function(e) {
+              openNotificationModal();
+              e.stopPropagation();
+            });
+            // Close profile dropdown when clicking outside
+            window.addEventListener("click", function() {
+              const menu = document.getElementById("profileMenu");
+              if (menu) menu.style.display = "none";
+            });
+            // Profile menu item: open Profile Modal
+            document.getElementById("profileMenuItem").addEventListener("click", function(e) {
+              e.stopPropagation();
+              openProfileModal();
+            });
+            // Dashboard menu item: placeholder hyperlink
+            document.getElementById("dashboardMenuItem").addEventListener("click", function(e) {
+              e.stopPropagation();
+              alert("Dashboard placeholder");
+            });
+            // Logout menu item: open Logout Confirmation Modal
+            document.getElementById("logoutMenuItem").addEventListener("click", function(e) {
+              e.stopPropagation();
+              openLogoutModal();
+            });
+            // Update dashboard container with logged-in content:
+            dashboardContainerEl.innerHTML = `
+              <h2 class="dashboard-heading">Dashboard</h2>
+              <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search your projects..." />
+              </div>
+              <h2 class="dashboard-title">Your Projects</h2>
+              <div id="projectsGrid"></div>
+            `;
+            // Re-assign searchInputEl and projectsGridEl after updating innerHTML.
+            searchInputEl = document.getElementById("searchInput");
+            projectsGridEl = document.getElementById("projectsGrid");
+            // Attach event listener for search input
+            searchInputEl.addEventListener("input", (e) => { renderProjects(e.target.value); });
+            renderProjects();
+          }
+          // Hide page loader after login check completes
+          pageLoader.style.display = "none";
+        })
+        .catch(err => {
+          console.error("Error fetching data:", err);
+          alert("Error fetching data.");
+          pageLoader.style.display = "none";
+        });
+    }
+  
+    loginFormEl.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+      const password = document.getElementById("loginPassword").value.trim();
+      doLogin(email, password);
+    });
+  
+    window.addEventListener("DOMContentLoaded", () => {
+      // Start cycling humorous loading messages
+      const loadingMessages = [
+        "Warming up the servers...",
+        "Fetching all the memes...",
+        "Summoning unicorns...",
+        "Reticulating splines...",
+        "Aligning your pixels...",
+        "Brewing some coffee..."
+      ];
+      const loadingMessageElement = document.getElementById("loadingMessage");
+      setInterval(() => {
+        const message = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+        loadingMessageElement.textContent = message;
+      }, 3000);
+  
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+      if (isLoggedIn === "true") {
+        const savedEmail = localStorage.getItem("userEmail");
+        const savedPassword = localStorage.getItem("userPassword");
+        if (savedEmail && savedPassword) { 
+          doLogin(savedEmail, savedPassword); 
+        } else {
+          pageLoader.style.display = "none";
+        }
+      } else {
+        pageLoader.style.display = "none";
+      }
+    });
+  
+    function renderProjects(filter = "") {
+      projectsGridEl.innerHTML = "";
+      let filtered = projects;
+      if (filter.trim() !== "") {
+        filtered = projects.filter(p =>
+          p.title.toLowerCase().includes(filter.toLowerCase()) ||
+          p.description.toLowerCase().includes(filter.toLowerCase()) ||
+          p.tags.some(tag => tag.toLowerCase().includes(filter.toLowerCase()))
+        );
+      }
+      filtered.forEach((project, idx) => {
+        const card = document.createElement("div");
+        card.className = "project-card";
+        card.setAttribute("data-project-id", project.projectId);
+  
+        // 3-Dot Menu
+        const menuContainer = document.createElement("div");
+        menuContainer.className = "card-menu-container";
+        menuContainer.innerHTML = `
+          <div class="card-menu">
+            <span class="menu-dot"></span>
+            <span class="menu-dot"></span>
+            <span class="menu-dot"></span>
+          </div>
+          <div class="dropdown-menu">
+            <div class="dropdown-item">Edit Info</div>
+            <div class="dropdown-item">Manage Access</div>
+            <div class="dropdown-item" data-action="add-event">Add an Event</div>
+          </div>
+        `;
+        menuContainer.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const dropdown = menuContainer.querySelector(".dropdown-menu");
+          dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        });
+        card.addEventListener("click", () => {
+          const dropdown = menuContainer.querySelector(".dropdown-menu");
+          dropdown.style.display = "none";
+        });
+        menuContainer.querySelectorAll(".dropdown-item").forEach(item => {
+          item.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const action = item.getAttribute("data-action");
+            if (action === "add-event") {
+              const projID = card.getAttribute("data-project-id");
+              document.getElementById("projectID").value = projID;
+              openEventModal();
+            } else if (item.textContent.trim() === "Manage Access") {
+              const projID = card.getAttribute("data-project-id");
+              document.getElementById("projectID").value = projID;
+              openAccessModal();
+            }
+          });
+        });
+        card.appendChild(menuContainer);
+  
+        // Card Content
+        const headerDiv = document.createElement("div");
+        headerDiv.className = "project-header";
+        const logoImg = document.createElement("img");
+        logoImg.src = project.logo || "https://via.placeholder.com/50";
+        logoImg.alt = "Project Logo";
+        logoImg.className = "project-logo";
+        const titleEl = document.createElement("h3");
+        titleEl.textContent = project.title;
+        headerDiv.appendChild(logoImg);
+        headerDiv.appendChild(titleEl);
+        card.appendChild(headerDiv);
+  
+        const desc = document.createElement("p");
+        desc.textContent = project.description;
+        card.appendChild(desc);
+  
+        const infoDiv = document.createElement("div");
+        infoDiv.className = "project-info";
+        infoDiv.textContent = (project.school || "Unknown School") + " • " + (project.participants || "N/A");
+        card.appendChild(infoDiv);
+  
+        if (project.tags.length > 0) {
+          const tagsDiv = document.createElement("div");
+          tagsDiv.className = "tags";
+          project.tags.forEach(tag => {
+            const tagSpan = document.createElement("span");
+            tagSpan.className = "tag";
+            tagSpan.textContent = tag;
+            tagsDiv.appendChild(tagSpan);
+          });
+          card.appendChild(tagsDiv);
+        }
+  
+        card.addEventListener("click", (e) => {
+          if (!e.target.closest(".card-menu-container")) {
+            openProjectDetailsModal(project, idx);
+          }
+        });
+  
+        projectsGridEl.appendChild(card);
+      });
+    }
+  
+    function openProjectDetailsModal(project, idx) {
+      modalTitleContainer.innerHTML = `
+        <img src="${project.logo || 'https://via.placeholder.com/50'}" alt="Project Logo"
+             class="project-logo" style="width:50px; height:50px; margin-right:10px;" />
+        <h3 style="margin:0;">${project.title}</h3>
+      `;
+      visitButton.onclick = () => {
+        if (project.demoLink && project.demoLink.trim() !== "") {
+          window.open(project.demoLink, "_blank");
+        } else {
+          alert("No demo link available.");
+        }
+      };
+      modalDescription.textContent = project.modalDescription || "";
+      modalProjectInfo.innerHTML = "";
+  
+      // School info
+      const schoolDiv = document.createElement("div");
+      const schoolIcon = document.createElement("img");
+      schoolIcon.className = "icon";
+      schoolIcon.src = "https://i.imgur.com/EkoIEZj.png";
+      schoolIcon.alt = "School Icon";
+      schoolDiv.appendChild(schoolIcon);
+      const schoolText = document.createElement("span");
+      schoolText.textContent = " " + (project.school || "Unknown School");
+      schoolDiv.appendChild(schoolText);
+      modalProjectInfo.appendChild(schoolDiv);
+  
+      // Participants info
+      const participantsDiv = document.createElement("div");
+      const participantsIcon = document.createElement("img");
+      participantsIcon.className = "icon";
+      participantsIcon.src = "https://i.imgur.com/Yxqk42o.png";
+      participantsIcon.alt = "Participants Icon";
+      participantsDiv.appendChild(participantsIcon);
+      const participantsText = document.createElement("span");
+      participantsText.textContent = " " + (project.participants || "N/A");
+      participantsDiv.appendChild(participantsText);
+      modalProjectInfo.appendChild(participantsDiv);
+  
+      // Email info
+      const emailDiv = document.createElement("div");
+      const emailIcon = document.createElement("img");
+      emailIcon.className = "icon";
+      emailIcon.src = "https://i.imgur.com/va70cTC.png";
+      emailIcon.alt = "Email Icon";
+      emailDiv.appendChild(emailIcon);
+      const fallbackEmail = project.title.toLowerCase().replace(/\s+/g, '') + "@stjohns.edu";
+      const emailText = document.createElement("span");
+      emailText.textContent = " " + (project.contactEmail || fallbackEmail);
+      emailDiv.appendChild(emailText);
+      modalProjectInfo.appendChild(emailDiv);
+  
+      // Tags
+      if (project.tags.length > 0) {
+        const tagsDiv = document.createElement("div");
+        tagsDiv.className = "tags";
+        project.tags.forEach(tag => {
+          const tagSpan = document.createElement("span");
+          tagSpan.className = "tag";
+          tagSpan.textContent = tag;
+          tagsDiv.appendChild(tagSpan);
+        });
+        modalProjectInfo.appendChild(tagsDiv);
+      }
+  
+      // Social links
+      const socialContainer = document.createElement("div");
+      socialContainer.className = "social-links";
+      const socials = [
+        { name: "Instagram", icon: "https://i.imgur.com/nqwRnQE.png", link: project.instagram },
+        { name: "LinkedIn", icon: "https://i.imgur.com/Gy8GfvE.png", link: project.linkedIn },
+        { name: "YouTube", icon: "https://i.imgur.com/0N1oxHH.png", link: project.youtube },
+        { name: "TikTok", icon: "https://i.imgur.com/F1J2FqH.png", link: project.tiktok },
+        { name: "GitHub", icon: "https://i.imgur.com/65TtGM5.png", link: project.github }
+      ];
+      socials.forEach(social => {
+        const iconDiv = document.createElement("div");
+        iconDiv.className = "social-icon";
+        iconDiv.style.webkitMaskImage = `url(${social.icon})`;
+        iconDiv.style.maskImage = `url(${social.icon})`;
+        iconDiv.style.webkitMaskSize = "contain";
+        iconDiv.style.maskSize = "contain";
+        iconDiv.style.webkitMaskRepeat = "no-repeat";
+        iconDiv.style.maskRepeat = "no-repeat";
+        iconDiv.style.webkitMaskPosition = "center";
+        iconDiv.style.maskPosition = "center";
+        iconDiv.addEventListener("click", () => {
+          if (social.link && social.link.trim() !== "") {
+            window.open(social.link, "_blank");
+          } else {
+            alert(social.name + " link not available.");
+          }
+        });
+        socialContainer.appendChild(iconDiv);
+      });
+      modalProjectInfo.appendChild(socialContainer);
+  
+      projectModal.style.display = "block";
+    }
+  
+    projectModalClose.addEventListener("click", () => { projectModal.style.display = "none"; });
+    window.addEventListener("click", (e) => { if (e.target === projectModal) { projectModal.style.display = "none"; } });
+  
+    /* ------------------------- */
+    /* EVENT MODAL LISTENERS */
+    /* ------------------------- */
+    eventModalClose.addEventListener("click", () => { eventModal.style.display = "none"; });
+    window.addEventListener("click", (e) => { if (e.target === eventModal) { eventModal.style.display = "none"; } });
+    function openEventModal() { eventModal.style.display = "block"; }
+  
+    /* ------------------------- */
+    /* PROFILE MODAL FUNCTIONS */
+    /* ------------------------- */
+    function openProfileModal() {
+      profileContent.innerHTML = `
+        <div style="text-align:center; margin-bottom:15px;">
+          ${currentUser.profilePicture && currentUser.profilePicture.trim() !== "" ? 
+            `<img src="${currentUser.profilePicture}" alt="${currentUser.firstName} ${currentUser.lastName}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">` : 
+            `<div style="width:80px; height:80px; border-radius:50%; background:${getRandomColor()}; display:flex; align-items:center; justify-content:center; font-size:2em; color:#fff;">${getInitials(currentUser.firstName, currentUser.lastName)}</div>`
+          }
+        </div>
+        <p><strong>Name:</strong> ${currentUser.firstName} ${currentUser.lastName}</p>
+        <p><strong>Email:</strong> ${currentUser.email}</p>
+        <p><strong>University:</strong> ${currentUser.school}</p>
+        <p><strong>Major:</strong> ${currentUser.major}</p>
+      `;
+      profileModal.style.display = "block";
+    }
+    profileModalClose.addEventListener("click", () => { profileModal.style.display = "none"; });
+    window.addEventListener("click", (e) => { if (e.target === profileModal) { profileModal.style.display = "none"; } });
+  
+    /* ------------------------- */
+    /* LOGOUT MODAL FUNCTIONS */
+    /* ------------------------- */
+    function openLogoutModal() {
+      logoutModal.style.display = "block";
+    }
+    logoutModalClose.addEventListener("click", () => { logoutModal.style.display = "none"; });
+    cancelLogoutBtn.addEventListener("click", () => { logoutModal.style.display = "none"; });
+    confirmLogoutBtn.addEventListener("click", () => {
+      localStorage.clear();
+      location.reload();
+    });
+    window.addEventListener("click", (e) => { if (e.target === logoutModal) { logoutModal.style.display = "none"; } });
+  
+    /* ------------------------- */
+    /* CREATE MODAL FUNCTIONS */
+    /* ------------------------- */
+    function openCreateModal() {
+      createModal.style.display = "block";
+    }
+    createModalClose.addEventListener("click", () => { createModal.style.display = "none"; });
+    window.addEventListener("click", (e) => { if (e.target === createModal) { createModal.style.display = "none"; } });
+  
+    /* ------------------------- */
+    /* NOTIFICATION MODAL FUNCTIONS */
+    /* ------------------------- */
+    function openNotificationModal() {
+      notificationModal.style.display = "block";
+    }
+    notificationModalClose.addEventListener("click", () => { notificationModal.style.display = "none"; });
+    window.addEventListener("click", (e) => { if (e.target === notificationModal) { notificationModal.style.display = "none"; } });
+  
+    /* ------------------------- */
+    /* FETCH USERS FOR AUTO-SUGGESTION */
+    /* ------------------------- */
+    fetch("https://sheet2api.com/v1/rkmbUqHQAC3C/submission-form-responses")
+      .then(res => res.json())
+      .then(data => {
+        const usersMap = new Map();
+        data.forEach(item => {
+          const userId = item["User ID"];
+          if (!usersMap.has(userId)) {
+            usersMap.set(userId, {
+              userId: userId,
+              firstName: item["First Name"] || "",
+              lastName: item["Last Name"] || "",
+              email: item.Email || "",
+              profilePicture: item["Profile Picture"] || ""
+            });
+          }
+        });
+        allUsers = Array.from(usersMap.values());
+      })
+      .catch(err => {
+        console.error("Error fetching all users:", err);
+      });
+  </script>
+</body>
+</html>

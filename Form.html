@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Submit Your Project</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Cropper.js CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+  <style>
+    /* ========================= */
+    /* BASE STYLES & VARIABLES */
+    /* ========================= */
+    :root {
+      --primary-color: #0066cc;
+      --accent-color: #28a745;
+      --text-color: #333;
+      --subtext-color: #555;
+      --input-bg: #fff;
+      --input-border: #ccc;
+      --input-border-focus: #0066cc;
+      --button-bg: #0066cc;
+      --button-hover-bg: #005bb5;
+      --modal-bg: #fff;
+      --modal-overlay: rgba(0,0,0,0.5);
+      --font-family: 'Open Sans', sans-serif;
+      --base-font-size: 16px;
+      --line-height: 1.6;
+      --padding: 20px;
+      --border-radius: 4px;
+      --transition-speed: 0.3s;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-family);
+      font-size: var(--base-font-size);
+      line-height: var(--line-height);
+      background-color: #f4f4f4;
+      color: var(--text-color);
+      padding: var(--padding);
+      overflow-x: hidden;
+    }
+    
+    /* ========================= */
+    /* PAGE LOADER & SUBMISSION LOADER */
+    /* ========================= */
+    .loading-animation, .loader {
+      width: 40px;
+      height: 40px;
+      background: var(--button-bg);
+      border-radius: 50%;
+      animation: dance 1s infinite ease-in-out;
+    }
+    @keyframes dance {
+      0% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-10px) rotate(15deg); }
+      50% { transform: translateY(0) rotate(0deg); }
+      75% { transform: translateY(10px) rotate(-15deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+    #pageLoader {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    #loadingMessage {
+      margin-top: 15px;
+      font-size: 1.2em;
+      color: var(--text-color);
+    }
+    #loadingOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.9);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    #loadingOverlay p {
+      font-size: 1.2em;
+      color: var(--text-color);
+      text-align: center;
+    }
+    
+    /* ========================= */
+    /* NAVBAR */
+    /* ========================= */
+    nav {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      background: #0066cc;
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      z-index: 1500;
+      flex-wrap: wrap;
+    }
+    .navbar-brand h1 { font-size: 1.8em; }
+    .navbar-login {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .navbar-login form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .navbar-login input[type="text"],
+    .navbar-login input[type="password"] {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      color: #333;
+      font-size: 0.95em;
+    }
+    .navbar-login input[type="text"]::placeholder,
+    .navbar-login input[type="password"]::placeholder {
+      color: #999;
+    }
+    .navbar-login button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #28a745;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .navbar-login button:hover { background: #218838; }
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .create-btn {
+      background-color: #28a745 !important;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .create-btn:hover { background-color: #218838 !important; }
+    .notification-icon {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      filter: brightness(0) invert(1);
+    }
+    .user-name { font-size: 1em; font-weight: 600; margin-right: 5px; }
+    .profile-dropdown { position: relative; cursor: pointer; }
+    .navbar-profile {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #fff;
+      font-size: 1em;
+      overflow: hidden;
+    }
+    .navbar-profile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .profile-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 50px;
+      background: #fff;
+      color: #333;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      width: 200px;
+      z-index: 100;
+    }
+    .profile-menu .dropdown-item {
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+    .profile-menu .dropdown-item:hover { background: #f0f0f0; }
+    .profile-menu .dropdown-divider {
+      height: 1px;
+      background: #ccc;
+      margin: 5px 0;
+    }
+    
+    /* ========================= */
+    /* SUBMISSION FORM & DYNAMIC PREVIEW */
+    /* ========================= */
+    .center-wrapper {
+      max-width: 1200px;
+      margin: 80px auto 0;
+      padding: var(--padding);
+      position: relative;
+      z-index: 1;
+    }
+    .form-and-card-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .form-container {
+      flex: 2;
+      min-width: 300px;
+      max-width: 600px;
+      background: #fff;
+      padding: calc(var(--padding) * 2);
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: var(--padding);
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h2#formTitle {
+      text-align: center;
+      font-size: 2.2em;
+      margin-bottom: 20px;
+      color: var(--text-color);
+    }
+    .hidden { display: none; }
+    .fade-in { animation: fadeIn 0.5s forwards; }
+    @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+    
+    /* Progress Circles */
+    #circleContainer {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .progress-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #ccc;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 5px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    .progress-circle.active { background-color: var(--button-bg); }
+    
+    /* Input Groups & Tooltips */
+    .input-group { position: relative; margin-bottom: 20px; }
+    .input-group .tooltip {
+      position: absolute;
+      top: -35px;
+      left: 0;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
+      white-space: nowrap;
+      z-index: 10;
+    }
+    .input-group:hover .tooltip,
+    .input-group:focus-within .tooltip { opacity: 1; transform: translateY(0); }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 10px;
+      margin: 12px 0 20px 0;
+      border: 1px solid var(--input-border);
+      border-radius: var(--border-radius);
+      background: var(--input-bg);
+      color: var(--text-color);
+      font-size: 1em;
+      transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+    }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    select:focus {
+      border-color: var(--input-border-focus);
+      box-shadow: 0 0 8px rgba(0,102,204,0.2);
+      outline: none;
+    }
+    input[type="file"] { display: none; }
+    .custom-file-label {
+      display: inline-block;
+      background-color: var(--button-bg);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: background-color var(--transition-speed) ease;
+    }
+    .custom-file-label:hover { background-color: var(--button-hover-bg); }
+    .button-container { text-align: center; margin-top: 20px; }
+    #step0 .button-container { display: flex; justify-content: space-around; }
+    @media (max-width: 480px) {
+      #step0 .button-container { flex-direction: column; align-items: center; }
+      #step0 .button-container button { width: 90%; margin: 5px 0; }
+    }
+    button,
+    input[type="submit"] {
+      background-color: var(--button-bg);
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 1em;
+      margin: 5px;
+      transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+    }
+    button:hover,
+    input[type="submit"]:hover { background-color: var(--button-hover-bg); transform: scale(1.05); }
+    .select-button {
+      background-color: var(--button-bg);
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--border-radius);
+      margin: 5px;
+      cursor: pointer;
+      transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+    }
+    .select-button.selected { background-color: var(--accent-color); transform: scale(1.05); }
+    .select-button img { filter: brightness(0) invert(1); }
+    
+    /* IMAGE PREVIEW */
+    .image-preview-container { display: block; margin-top: 10px; max-width: 100%; overflow: hidden; }
+    .image-preview {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border: 1px solid var(--input-border);
+      border-radius: var(--border-radius);
+      margin-top: 10px;
+      cursor: pointer;
+      display: inline-block;
+    }
+    .file-name {
+      font-size: 0.9em;
+      color: var(--subtext-color);
+      cursor: pointer;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 5px;
+    }
+    
+    /* ========================= */
+    /* DYNAMIC PROJECT CARD PREVIEW */
+    /* ========================= */
+    .project-card {
+      flex: 1;
+      min-width: 300px;
+      max-width: 350px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 20px;
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+    }
+    .project-card.hidden { display: none; }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-logo {
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+      background-color: #ccc;
+      background-size: cover;
+      background-position: center;
+    }
+    .card-header .card-title {
+      flex-grow: 1;
+      padding-left: 15px;
+    }
+    .card-header .card-title h3 { margin: 0; font-size: 1.5em; }
+    .card-header .card-title p { margin: 5px 0 0 0; font-size: 1em; color: var(--subtext-color); }
+    .card-header #cardActionButtonContainer { align-self: flex-start; }
+    .card-body p { margin: 10px 0; word-break: break-word; }
+    .card-body .visit-button {
+      background: #065fd4;
+      color: #fff;
+      border: none;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px 0;
+      width: 150px;
+      height: 40px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-body .social-icon {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+      margin-right: 5px;
+      cursor: pointer;
+      background-color: #aaa;
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+    }
+    #cardContactInfo p { margin: 5px 0; font-size: 0.9em; }
+    #cardTags { margin: 10px 0; }
+    #cardTags .tag {
+      display: inline-block;
+      background: #eee;
+      color: var(--subtext-color);
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 0.8em;
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+    .preview-label {
+      background-color: var(--primary-color);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 1em;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    
+    /* ========================= */
+    /* MODAL STYLES */
+    /* ========================= */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background: var(--modal-bg);
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 5px;
+      position: relative;
+      color: var(--text-color);
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .close {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover,
+    .close:focus { color: #000; text-decoration: none; }
+    
+    /* Crop Modal (Smaller) */
+    #cropModal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 10000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    #cropContainer {
+      background: var(--modal-bg);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      max-height: 80%;
+    }
+    #cropImage {
+      max-width: 350px;
+      max-height: 350px;
+    }
+    
+    /* ========================= */
+    /* SUCCESS MESSAGE */
+    /* ========================= */
+    #successMessage {
+      display: none;
+      text-align: center;
+      margin-top: 40px;
+      background: #fff;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      color: var(--text-color);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #successMessage button {
+      margin: 10px;
+      background-color: var(--button-bg);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+    }
+    #successMessage button:hover {
+      background-color: var(--button-hover-bg);
+      transform: scale(1.05);
+    }
+    
+    /* ========================= */
+    /* Additional Modals (Logout, Profile, Create, Notification) */
+    /* ========================= */
+    /* Logout Modal Button Styles (as in the original) */
+    #logoutModal button {
+      padding: 10px 20px;
+      margin: 10px 5px 0;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    #confirmLogoutBtn {
+      background-color: #cc0000;
+      color: #fff;
+    }
+    #confirmLogoutBtn:hover { background-color: #b30000; }
+    #cancelLogoutBtn {
+      background-color: #ccc;
+      color: #333;
+    }
+    #cancelLogoutBtn:hover { background-color: #bbb; }
+    #profileModal .modal-content,
+    #createModal .modal-content,
+    #notificationModal .modal-content {
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <!-- PAGE LOADER -->
+  <div id="pageLoader">
+    <div class="loading-animation"></div>
+    <div id="loadingMessage">Warming up the servers...</div>
+  </div>
+  
+  <!-- NAVBAR -->
+  <nav>
+    <div class="navbar-brand">
+      <h1>Activity Hub</h1>
+    </div>
+    <div class="navbar-login" id="navbarLoginArea">
+      <!-- Initially shows login form -->
+      <form id="loginForm">
+        <input type="text" id="loginEmail" placeholder="Email" required />
+        <input type="password" id="loginPassword" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </nav>
+  
+  <!-- CENTER WRAPPER -->
+  <div class="center-wrapper">
+    <div class="form-and-card-container">
+      <!-- Submission Form -->
+      <div class="form-container" id="submissionContainer">
+        <h2 id="formTitle">Submit Your Project</h2>
+        <!-- Progress Circles -->
+        <div id="circleContainer"></div>
+        <form id="submissionForm" action="https://docs.google.com/forms/d/e/1FAIpQLSeXyQeEF8mJdILhOuI44PNayI5AMmsC6IbFPuPoIjUNGSqVZQ/formResponse" method="POST" target="hidden_iframe">
+          <!-- STEP 0: Account Setup -->
+          <div id="step0">
+            <div class="section-title">Account Setup</div>
+            <p class="description-text">Please choose to sign in or create an account.</p>
+            <div class="button-container">
+              <button type="button" onclick="setFlow(true)">I have an account</button>
+              <button type="button" onclick="setFlow(false)">I need to create one</button>
+            </div>
+          </div>
+          <!-- STEP 1a: Account Creation -->
+          <div id="step1_create" class="hidden">
+            <div class="section-title">Account Creation</div>
+            <p class="description-text">Enter your email and create a password. (You must create an account before uploading your project.)</p>
+            <div class="input-group">
+              <label for="email">Email</label>
+              <input type="email" name="entry.1302831663" id="email" required />
+              <div class="tooltip">Use an email you will still have access to (e.g., Gmail, Outlook)</div>
+            </div>
+            <div class="input-group">
+              <label for="password">Password</label>
+              <input type="password" name="entry.1633033794" id="password" required />
+              <div class="tooltip">Create a secure password</div>
+            </div>
+            <div id="createError" style="color: #FF8080; text-align: center;"></div>
+            <div class="button-container">
+              <button type="button" onclick="prevStep()">Back</button>
+              <button type="button" onclick="checkAccountCreation()">Next</button>
+            </div>
+          </div>
+          <!-- STEP 1b: Login (for form login if not using navbar) -->
+          <div id="step1_login" class="hidden">
+            <div class="section-title">Login</div>
+            <p class="description-text">Enter your email and password.</p>
+            <div class="input-group">
+              <label for="loginEmailForm">Email</label>
+              <input type="email" id="loginEmailForm" required />
+              <div class="tooltip">Enter your login email</div>
+            </div>
+            <div class="input-group">
+              <label for="loginPasswordForm">Password</label>
+              <input type="password" id="loginPasswordForm" required />
+              <div class="tooltip">Enter your login password</div>
+            </div>
+            <div id="loginErrorForm" style="color: #FF8080; text-align: center;"></div>
+            <div class="button-container">
+              <button type="button" onclick="prevStep()">Back</button>
+              <button type="button" onclick="(async () => { await attemptLogin(); })()">Login</button>
+              <br/><br/>
+              <a href="#" onclick="forgotPassword()">Forgot my password</a>
+            </div>
+          </div>
+          <!-- STEP 2: Personal Information (New Account Only) -->
+          <div id="step4" class="hidden">
+            <div class="section-title">Personal Information</div>
+            <div class="input-group">
+              <label for="firstName">First Name</label>
+              <input type="text" name="entry.558536691" id="firstName" required />
+              <div class="tooltip">Enter your first name</div>
+            </div>
+            <div class="input-group">
+              <label for="lastName">Last Name</label>
+              <input type="text" name="entry.1158899171" id="lastName" required />
+              <div class="tooltip">Enter your last name</div>
+            </div>
+            <div class="input-group">
+              <label for="eduEmail">Educational Email</label>
+              <input type="text" name="entry.591976255" id="eduEmail" required />
+              <div class="tooltip">Enter your educational email (e.g., yourname@school.edu)</div>
+            </div>
+            <div class="input-group">
+              <label for="college">College</label>
+              <input type="text" name="entry.305561957" id="college" required />
+              <div class="tooltip">Enter your college or university name</div>
+            </div>
+            <div class="input-group">
+              <label for="major">Major</label>
+              <input type="text" name="entry.2056172019" id="major" />
+              <div class="tooltip">Enter your major or field of study</div>
+            </div>
+            <div class="input-group">
+              <label for="profilePicture">Profile Picture</label>
+              <input type="file" id="profilePicture" accept="image/*" />
+              <label for="profilePicture" class="custom-file-label">Choose Profile Picture</label>
+              <div class="image-preview-container" id="profilePreviewContainer"></div>
+            </div>
+            <!-- Hidden field for Profile Picture URL -->
+            <input type="hidden" name="entry.1076193597" id="profilePictureURL" />
+            <div class="button-container">
+              <button type="button" onclick="prevStep()">Back</button>
+              <button type="button" onclick="nextStep()">Continue</button>
+            </div>
+          </div>
+          <!-- STEP 3: Project Type -->
+          <div id="stepProjectType" class="hidden">
+            <div class="section-title">Project Type</div>
+            <div class="input-group">
+              <label>Project Type</label>
+              <button type="button" class="select-button" data-value="Organization" onclick="toggleSelection('projectType', this)">
+                <img src="https://i.imgur.com/kjRVtI5.png" alt="Organization" style="vertical-align: middle; margin-right: 8px; width:20px; height:20px;"> Organization
+              </button>
+              <button type="button" class="select-button" data-value="Startup" onclick="toggleSelection('projectType', this)">
+                <img src="https://i.imgur.com/GXFRt9p.png" alt="Startup" style="vertical-align: middle; margin-right: 8px; width:20px; height:20px;"> Startup
+              </button>
+              <button type="button" class="select-button" data-value="Small Business" onclick="toggleSelection('projectType', this)">
+                <img src="https://i.imgur.com/suakO06.png" alt="Small Business" style="vertical-align: middle; margin-right: 8px; width:20px; height:20px;"> Small Business
+              </button>
+              <button type="button" class="select-button" data-value="Research & Development" onclick="toggleSelection('projectType', this)">
+                <img src="https://i.imgur.com/SFHodyh.png" alt="Research & Development" style="vertical-align: middle; margin-right: 8px; width:20px; height:20px;"> Research & Development
+              </button>
+              <div class="tooltip">Select one project type</div>
+            </div>
+            <input type="hidden" name="entry.362637871" id="projectTypeInput" />
+            <div class="button-container">
+              <button type="button" onclick="prevStep()">Back</button>
+              <button type="button" onclick="nextStep()">Continue</button>
+            </div>
+          </div>
+          <!-- STEP 4: Project Overview -->
+          <div id="step2" class="hidden">
+            <div id="projectOverviewTitle" class="section-title">Project Overview</div>
+            <div class="input-group">
+              <label for="projectTitle">Project Title</label>
+              <input type="text" name="entry.244953197" id="projectTitle" required />
+              <div class="tooltip">Enter the title of your project</div>
+            </div>
+            <div class="input-group">
+              <label for="tagline">Tagline</label>
+              <input type="text" name="entry.1419351904" id="tagline" required />
+              <div class="tooltip">Enter a catchy tagline for your project</div>
+            </div>
+            <div class="input-group">
+              <label for="description">Description</label>
+              <input type="text" name="entry.1663281528" id="description" required />
+              <div class="tooltip">Provide a brief description of your project</div>
+            </div>
+            <div class="input-group">
+              <label for="123-ProjectContactEmail">Contact Email (Optional)</label>
+              <input type="email" name="entry.2065357189" id="123-ProjectContactEmail" placeholder="yourproject.contact@email"/>
+              <div class="tooltip">Provide an optional contact email for project inquiries</div>
+            </div>
+            <div class="input-group">
+              <label>Would you like to add a custom action button?</label>
+              <div class="button-container">
+                <button type="button" onclick="selectCustomActionChoice(true, this)">Yes</button>
+                <button type="button" onclick="selectCustomActionChoice(false, this)">No</button>
+              </div>
+            </div>
+            <div id="customActionFields" class="hidden">
+              <div class="input-group">
+                <label for="cta">Call-to-Action</label>
+                <input type="text" name="entry.1676023538" id="cta" maxlength="20" />
+                <div class="tooltip">Enter a call-to-action phrase (max 20 characters, e.g., "Learn More")</div>
+              </div>
+              <div class="input-group">
+                <label for="demoLink">Webpage or Live Demo</label>
+                <input type="text" name="entry.782134705" id="demoLink" />
+                <div class="tooltip">Enter the URL for your project's webpage or live demo</div>
+              </div>
+            </div>
+            <div class="button-container">
+              <button type="button" onclick="prevStep()">Back</button>
+              <button type="button" onclick="nextStep()">Continue</button>
+            </div>
+          </div>
+          <!-- STEP 5: Project Details -->
+          <div id="step3" class="hidden">
+            <div id="projectDetailsTitle" class="section-title">Project Details</div>
+            <div class="input-group">
+              <label for="missionType">Mission Type</label>
+              <select name="entry.2118515615" id="missionType" required>
+                <option value="">-- Select Mission Type --</option>
+                <option value="For Profit">For Profit</option>
+                <option value="Non-Profit/Social Initiative">Non-Profit/Social Initiative</option>
+              </select>
+              <div class="tooltip">Select your project’s mission type</div>
+            </div>
+            <div class="input-group">
+              <label>Field</label>
+              <button type="button" class="select-button" data-value="STEM" onclick="toggleSelection('industry', this)">STEM</button>
+              <button type="button" class="select-button" data-value="Education & Learning" onclick="toggleSelection('industry', this)">Education & Learning</button>
+              <button type="button" class="select-button" data-value="Games & Entertainment" onclick="toggleSelection('industry', this)">Games & Entertainment</button>
+              <button type="button" class="select-button" data-value="Environment & Sustainability" onclick="toggleSelection('industry', this)">Environment & Sustainability</button>
+              <button type="button" class="select-button" data-value="Health & Wellness" onclick="toggleSelection('industry', this)">Health & Wellness</button>
+              <button type="button" class="select-button" data-value="Arts" onclick="toggleSelection('industry', this)">Arts</button>
+              <button type="button" class="select-button" data-value="Media" onclick="toggleSelection('industry', this)">Media</button>
+              <div class="tooltip">Select one or more fields</div>
+            </div>
+            <div class="input-group">
+              <label for="numParticipants">Number of Participants</label>
+              <select name="entry.1294678231" id="numParticipants" required>
+                <option value="">-- Select Participants --</option>
+                <option value="Myself Only">Myself Only</option>
+                <option value="2-10 members">2-10 members</option>
+                <option value="11-50 members">11-50 members</option>
+                <option value="51-200 members">51-200 members</option>
+                <option value="201-500 members">201-500 members</option>
+                <option value="501-1,000 members">501-1,000 members</option>
+                <option value="1,001-5,000 members">1,001-5,000 members</option>
+                <option value="5,000+ members">5,000+ members</option>
+              </select>
+              <div class="tooltip">Select the number of participants in the project</div>
+            </div>
+            <div class="input-group">
+              <label for="logoImage">Logo Image</label>
+              <input type="file" id="logoImage" accept="image/*" />
+              <label for="logoImage" class="custom-file-label">Choose Logo Image</label>
+              <div class="image-preview-container" id="logoPreviewContainer"></div>
+            </div>
+            <!-- Hidden fields for User ID and Logo URL -->
+            <input type="hidden" name="entry.1327198714" id="userID" />
+            <input type="hidden" name="entry.2122459244" id="logoURL" />
+            <!-- Hidden field for Industry -->
+            <input type="hidden" name="entry.1103064816" id="industryInput" />
+            <p class="note" style="margin-top:10px;">Note: You can now upload your logo image directly! We will host it on Imgur for you.</p>
+            <div class="button-container">
+              <button type="button" onclick="prevStep()">Back</button>
+              <button type="button" onclick="nextStep()">Continue</button>
+            </div>
+          </div>
+          <!-- STEP 6: Social Links & Review -->
+          <div id="step5" class="hidden">
+            <div id="socialLinksTitle" class="section-title">Social Links</div>
+            <div class="input-group">
+              <label for="instagram">Instagram</label>
+              <input type="text" name="entry.2095010028" id="instagram" placeholder="https://yourInstagram.com/..." />
+              <div class="tooltip">Enter your project's Instagram URL</div>
+            </div>
+            <div class="input-group">
+              <label for="linkedin">LinkedIn</label>
+              <input type="text" name="entry.1802286959" id="linkedin" placeholder="https://yourLinkedIn.com/..." />
+              <div class="tooltip">Enter your project's LinkedIn URL</div>
+            </div>
+            <div class="input-group">
+              <label for="youtube">YouTube</label>
+              <input type="text" name="entry.53226177" id="youtube" placeholder="https://yourYouTube.com/..." />
+              <div class="tooltip">Enter your project's YouTube URL</div>
+            </div>
+            <div class="input-group">
+              <label for="tiktok">TikTok</label>
+              <input type="text" name="entry.1562451982" id="tiktok" placeholder="https://yourTikTok.com/..." />
+              <div class="tooltip">Enter your project's TikTok URL</div>
+            </div>
+            <div class="input-group">
+              <label for="github">GitHub</label>
+              <input type="text" name="entry.150994526" id="github" placeholder="https://yourGitHub.com/..." />
+              <div class="tooltip">Enter your project's GitHub URL</div>
+            </div>
+            <div class="input-group">
+              <label for="website">Website</label>
+              <input type="text" name="entry.414034471" id="website" placeholder="https://yourwebsite.com/..." />
+              <div class="tooltip">Enter your project's website URL</div>
+            </div>
+            <div class="input-group">
+              <label for="linktree">Linktree</label>
+              <input type="text" name="entry.2053647958" id="linktree" placeholder="https://linktr.ee/yourusername" />
+              <div class="tooltip">Enter your project's Linktree URL</div>
+            </div>
+            <div class="input-group">
+              <label for="disc">Discord</label>
+              <input type="text" name="entry.913273410" id="disc" placeholder="https://discord.gg/..." />
+              <div class="tooltip">Enter your project's Discord invite link</div>
+            </div>
+            <div class="input-group">
+              <label for="groupme">GroupMe</label>
+              <input type="text" name="entry.100258116" id="groupme" placeholder="https://groupme.com/..." />
+              <div class="tooltip">Enter your project's GroupMe group link</div>
+            </div>
+            <div class="input-group">
+              <label for="twitter">Twitter</label>
+              <input type="text" name="entry.680101451" id="twitter" placeholder="https://yourTwitter.com/..." />
+              <div class="tooltip">Enter your project's Twitter URL</div>
+            </div>
+            <div class="section-title" id="reviewTitle">Review & Confirm</div>
+            <p>Please review your information below before submitting:</p>
+            <div id="reviewSection"></div>
+            <div class="button-container">
+              <button type="button" onclick="prevStep()">Back</button>
+              <button type="button" id="confirmSubmitBtn" onclick="finalizeSubmission()">Confirm & Submit</button>
+            </div>
+          </div>
+          <!-- Hidden Field for Project ID -->
+          <input type="hidden" name="entry.1121122435" id="projectID" />
+        </form>
+      </div>
+      
+      <!-- Live Project Card Preview -->
+      <div id="liveProjectCard" class="project-card hidden">
+        <div class="preview-label">Project Preview</div>
+        <div class="card-header">
+          <div class="card-logo" id="cardLogo"></div>
+          <div class="card-title">
+            <h3 id="cardTitle">Project Title</h3>
+            <p id="cardTagline">Tagline goes here...</p>
+          </div>
+          <div id="cardActionButtonContainer"></div>
+        </div>
+        <div class="card-body">
+          <p id="cardDescription">Project description...</p>
+          <div id="cardContactInfo">
+            <p id="cardParticipantsInfo"></p>
+            <p id="cardEmailInfo"></p>
+          </div>
+          <div id="cardTags"></div>
+          <div id="cardSocials"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Loading Overlay for Submission -->
+  <div id="loadingOverlay">
+    <div class="loader"></div>
+    <p id="loadingOverlayMessage">Submitting your project...</p>
+  </div>
+  
+  <!-- Success Message with Options -->
+  <div id="successMessage" style="display:none;">
+    <h2>Submission Successful!</h2>
+    <p>Thank you for submitting your project. We will review it and get in touch with you shortly.</p>
+    <div class="button-container">
+      <button id="newProjectBtn">Submit Another Project</button>
+      <button id="exploreProjectsBtn">Explore More Projects</button>
+    </div>
+  </div>
+  
+  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+  
+  <!-- Crop Modal (Smaller) -->
+  <div id="cropModal" class="hidden">
+    <div id="cropContainer">
+      <img id="cropImage" src="" alt="Crop Image" />
+      <div id="modalButtons">
+        <button type="button" id="useOriginalBtn">Looks Good</button>
+        <button type="button" id="openEditBtn">Edit</button>
+      </div>
+      <div id="cropControls">
+        <button type="button" id="rotateLeftBtn">Rotate Left</button>
+        <button type="button" id="rotateRightBtn">Rotate Right</button>
+        <button type="button" id="cropConfirmBtn">Confirm Edits</button>
+        <button type="button" id="cropCancelBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Preview Modal -->
+  <div id="previewModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="previewModalClose">&times;</span>
+      <div id="previewModalHeader"></div>
+      <p id="previewModalDescription"></p>
+      <div id="previewModalProjectInfo"></div>
+      <div id="previewModalSocialLinks"></div>
+    </div>
+  </div>
+  
+  <!-- Captcha Modal -->
+  <div id="captchaModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="captchaClose">&times;</span>
+      <h3>Please confirm you're not a robot</h3>
+      <p>Click the button below to verify.</p>
+      <button id="captchaConfirmBtn">Verifying...</button>
+    </div>
+  </div>
+  
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="editModalClose">&times;</span>
+      <h3>Edit Field</h3>
+      <label id="editModalLabel"></label>
+      <div id="editModalInputContainer"></div>
+      <div style="text-align:center; margin-top:20px;">
+        <button id="editModalSave">Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Additional Modals -->
+  <!-- Logout Confirmation Modal -->
+  <div id="logoutModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="logoutModalClose">&times;</span>
+      <h2>Confirm Logout</h2>
+      <p>Are you sure you want to log out?</p>
+      <button id="confirmLogoutBtn">Yes, log out</button>
+      <button id="cancelLogoutBtn">Cancel</button>
+    </div>
+  </div>
+  
+  <!-- Profile Modal -->
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="profileModalClose">&times;</span>
+      <h2>Your Profile</h2>
+      <div id="profileContent"></div>
+    </div>
+  </div>
+  
+  <!-- Create Modal -->
+  <div id="createModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="createModalClose">&times;</span>
+      <h2>Create</h2>
+      <p>This feature is coming soon. Stay tuned!</p>
+    </div>
+  </div>
+  
+  <!-- Notification Modal -->
+  <div id="notificationModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="notificationModalClose">&times;</span>
+      <h2>Notifications</h2>
+      <p>There are no notifications yet, but you'll see them here whenever you do get any!</p>
+    </div>
+  </div>
+  
+  <!-- Cropper.js Script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  
+  <!-- ========================= -->
+  <!-- Submission Form & Dynamic Preview Script -->
+  <script>
+    (function() {
+      const CLIENT_ID = "4693c5376af54cb";
+      let isLoginFlow = false;
+      let currentStepIndex = 0;
+      let flowSteps = isLoginFlow 
+          ? ["step0", "step1_login", "stepProjectType", "step2", "step3", "step5"]
+          : ["step0", "step1_create", "step4", "stepProjectType", "step2", "step3", "step5"];
+      let formSubmitted = false;
+      let currentCropper = null;
+      let currentImageType = "";
+      let croppedLogoData = "";
+      let croppedProfileData = "";
+      let selectedValues = { projectType: [], industry: [] };
+      let currentEditField = "";
+      let currentEditInputElement = null;
+      
+      const dropdownOptions = {
+        projectType: ["Organization", "Startup", "Small Business", "Research & Development"],
+        industry: ["STEM", "Education & Learning", "Games & Entertainment", "Environment & Sustainability", "Health & Wellness", "Arts", "Media"]
+      };
+      
+      const padNumber = n => n < 10 ? '0' + n : n;
+      
+      function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = err => reject(err);
+          reader.readAsDataURL(file);
+        });
+      }
+      
+      function generateProjectID() {
+        const now = new Date();
+        const formattedTimestamp = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()} ${now.getHours()}:${padNumber(now.getMinutes())}:${padNumber(now.getSeconds())}`;
+        return "P-" + formattedTimestamp.replace(/[\/: ]/g, '');
+      }
+      
+      function showLoading(show) {
+        document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
+      }
+      
+      function getLabelText(field) {
+        const labels = {
+          email: "Email",
+          firstName: "First Name",
+          lastName: "Last Name",
+          eduEmail: "Educational Email",
+          college: "College",
+          major: "Major",
+          projectTitle: "Project Title",
+          tagline: "Tagline",
+          description: "Description",
+          "123-ProjectContactEmail": "Contact Email",
+          missionType: "Mission Type"
+        };
+        return labels[field] || field;
+      }
+      
+      function setFlow(isLogin) {
+        isLoginFlow = isLogin;
+        flowSteps = isLoginFlow 
+          ? ["step0", "step1_login", "stepProjectType", "step2", "step3", "step5"]
+          : ["step0", "step1_create", "step4", "stepProjectType", "step2", "step3", "step5"];
+        currentStepIndex = 0;
+        document.getElementById("step1_create").classList.toggle("hidden", isLoginFlow);
+        document.getElementById("step1_login").classList.toggle("hidden", !isLoginFlow);
+        buildCircles();
+        document.getElementById("liveProjectCard").classList.remove("hidden");
+        updateLiveProjectCard();
+        nextStep();
+      }
+      
+      function buildCircles() {
+        const container = document.getElementById("circleContainer");
+        container.innerHTML = "";
+        const projectStepIndex = flowSteps.indexOf("stepProjectType");
+        const projectSteps = flowSteps.slice(projectStepIndex);
+        projectSteps.forEach((step, index) => {
+          const circle = document.createElement("div");
+          circle.className = "progress-circle" + (index === 0 ? " active" : "");
+          circle.textContent = index + 1;
+          container.appendChild(circle);
+        });
+        updateProgress();
+      }
+      
+      function showStep(index) {
+        flowSteps.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add("hidden");
+        });
+        const stepEl = document.getElementById(flowSteps[index]);
+        if (stepEl) {
+          stepEl.classList.remove("hidden");
+          stepEl.classList.add("fade-in");
+          setTimeout(() => stepEl.classList.remove("fade-in"), 500);
+        }
+        currentStepIndex = index;
+        updateProgress();
+        if(currentStepIndex < flowSteps.indexOf("stepProjectType")) {
+          document.getElementById("circleContainer").style.display = "none";
+        } else {
+          document.getElementById("circleContainer").style.display = "flex";
+        }
+        if (currentStepIndex >= flowSteps.indexOf("stepProjectType")) {
+          document.getElementById("liveProjectCard").classList.remove("hidden");
+          attachLiveCardListeners();
+          updateLiveProjectCard();
+        } else {
+          document.getElementById("liveProjectCard").classList.add("hidden");
+        }
+        if (flowSteps[index] === "step5") { populateReview(); }
+      }
+      
+      function nextStep() {
+        if (currentStepIndex < flowSteps.length - 1) { showStep(currentStepIndex + 1); }
+      }
+      
+      function prevStep() {
+        if (currentStepIndex > 0) { showStep(currentStepIndex - 1); }
+      }
+      
+      function updateProgress() {
+        const projectStepIndex = flowSteps.indexOf("stepProjectType");
+        const relativeIndex = currentStepIndex - projectStepIndex;
+        const circles = document.querySelectorAll(".progress-circle");
+        circles.forEach((circle, idx) => {
+          if(idx <= relativeIndex) { circle.classList.add("active"); }
+          else { circle.classList.remove("active"); }
+        });
+      }
+      
+      async function checkAccountCreation() {
+        const email = document.getElementById("email").value.trim();
+        if (!email) return;
+        showLoading(true);
+        try {
+          const response = await fetch("https://sheet2api.com/v1/rkmbUqHQAC3C/submission-form-responses");
+          const data = await response.json();
+          const exists = data.some(row => row.Email.toLowerCase() === email.toLowerCase());
+          if (exists) {
+            document.getElementById("createError").textContent = "This email already has an account. Please log in or use a different email.";
+            showLoading(false);
+          } else {
+            document.getElementById("createError").textContent = "";
+            const userIDs = data.map(row => Number(row["User ID"]) || 0);
+            const newUserID = userIDs.length ? Math.max(...userIDs) + 1 : 1;
+            document.getElementById("userID").value = newUserID;
+            setTimeout(() => { showLoading(false); nextStep(); }, 2000);
+          }
+        } catch (err) {
+          console.error("Error in account creation:", err);
+          showLoading(false);
+        }
+      }
+      
+      // For form login: save session, update navbar, and advance form to "Project Type" step.
+      async function attemptLogin() {
+        const email = document.getElementById("loginEmailForm") ? document.getElementById("loginEmailForm").value.trim() : "";
+        const password = document.getElementById("loginPasswordForm") ? document.getElementById("loginPasswordForm").value : "";
+        if (!email || !password) return;
+        try {
+          const response = await fetch("https://sheet2api.com/v1/rkmbUqHQAC3C/submission-form-responses");
+          const data = await response.json();
+          const record = data.find(row =>
+            row.Email.toLowerCase() === email.toLowerCase() && row.Password === password
+          );
+          if (record) {
+            document.getElementById("firstName").value = record["First Name"] || "";
+            document.getElementById("lastName").value = record["Last Name"] || "";
+            document.getElementById("eduEmail").value = record["Email Address (.edu)"] || record.Email || "";
+            document.getElementById("college").value = record["College or University Name"] || "";
+            document.getElementById("major").value = record["Major"] || "";
+            document.getElementById("userID").value = record["User ID"] || "";
+            document.getElementById("profilePictureURL").value = record["Profile Picture"] || "";
+            document.getElementById("email").value = email;
+            document.getElementById("password").value = password;
+            if(document.getElementById("loginErrorForm")) {
+              document.getElementById("loginErrorForm").textContent = "Login successful!";
+            }
+            localStorage.setItem("userEmail", email);
+            localStorage.setItem("userPassword", password);
+            localStorage.setItem("isLoggedIn", "true");
+            currentUser = {
+              firstName: record["First Name"] || "",
+              lastName: record["Last Name"] || "",
+              profilePicture: record["Profile Picture"] || "",
+              email: record.Email || "",
+              school: record["College or University Name"] || "",
+              major: record["Major"] || ""
+            };
+            updateNavbarAfterLogin();
+            advanceToProjectTypeStep();
+          } else {
+            if(document.getElementById("loginErrorForm")) {
+              document.getElementById("loginErrorForm").textContent = "Invalid email or password.";
+            }
+          }
+        } catch (err) {
+          console.error("Error during login:", err);
+        }
+      }
+      
+      function forgotPassword() {
+        alert("Please contact entrepreneur.hub.project@gmail.com for password recovery instructions.");
+      }
+      
+      function toggleSelection(group, button) {
+        const value = button.getAttribute("data-value");
+        if (group === "projectType") {
+          const container = button.parentElement;
+          container.querySelectorAll(".select-button").forEach(btn => btn.classList.remove("selected"));
+          selectedValues[group] = [];
+          button.classList.add("selected");
+          selectedValues[group].push(value);
+          document.getElementById(group + "Input").value = value;
+          updateProjectTypeTitles(value);
+        } else {
+          button.classList.toggle("selected");
+          if (button.classList.contains("selected")) {
+            selectedValues[group].push(value);
+          } else {
+            selectedValues[group] = selectedValues[group].filter(item => item !== value);
+          }
+          document.getElementById(group + "Input").value = selectedValues[group].join(", ");
+        }
+        updateLiveProjectCard();
+      }
+      
+      function updateProjectTypeTitles(selectedValue) {
+        const displayValue = selectedValue.toLowerCase().includes("research") ? "R&D" : selectedValue;
+        document.getElementById("formTitle").innerText = "Submit Your " + displayValue + " Project";
+        document.getElementById("projectOverviewTitle").innerText = displayValue + " Overview";
+        document.getElementById("projectDetailsTitle").innerText = displayValue + " Details";
+        document.getElementById("socialLinksTitle").innerText = displayValue + " Social Links";
+      }
+      
+      function openEditModal(field) {
+        currentEditField = field;
+        const fieldElement = document.getElementById(field);
+        if (!fieldElement) return;
+        const editInputContainer = document.getElementById("editModalInputContainer");
+        editInputContainer.innerHTML = "";
+        if (field === "projectTypeInput") {
+          const container = createButtonGroup(dropdownOptions.projectType, fieldElement.value, "Project Type");
+          currentEditInputElement = container;
+          document.getElementById("editModalLabel").textContent = "Project Type";
+          editInputContainer.appendChild(container);
+        } else if (field === "industryInput") {
+          const container = createButtonGroup(dropdownOptions.industry, fieldElement.value.split(",").map(s => s.trim()).filter(Boolean), "Field(s)", true);
+          currentEditInputElement = container;
+          document.getElementById("editModalLabel").textContent = "Field(s)";
+          editInputContainer.appendChild(container);
+        } else {
+          const tagName = fieldElement.tagName.toLowerCase();
+          let inputElement;
+          if (tagName === "input") {
+            inputElement = document.createElement("input");
+            inputElement.type = fieldElement.type;
+            inputElement.value = fieldElement.value;
+          } else if (tagName === "select") {
+            inputElement = document.createElement("select");
+            Array.from(fieldElement.options).forEach(opt => {
+              const option = document.createElement("option");
+              option.value = opt.value;
+              option.text = opt.text;
+              if (opt.selected) option.selected = true;
+              inputElement.appendChild(option);
+            });
+          } else if (tagName === "textarea") {
+            inputElement = document.createElement("textarea");
+            inputElement.value = fieldElement.value;
+          } else {
+            inputElement = document.createElement("input");
+            inputElement.type = "text";
+            inputElement.value = fieldElement.value;
+          }
+          inputElement.style.width = "80%";
+          inputElement.style.padding = "8px";
+          inputElement.style.margin = "20px auto";
+          inputElement.style.display = "block";
+          document.getElementById("editModalLabel").textContent = getLabelText(field);
+          editInputContainer.appendChild(inputElement);
+          currentEditInputElement = inputElement;
+        }
+        document.getElementById("editModal").style.display = "block";
+      }
+      
+      function createButtonGroup(options, currentValue, label, multiple = false) {
+        const container = document.createElement("div");
+        container.style.textAlign = "center";
+        options.forEach(option => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "select-button";
+          btn.textContent = option;
+          btn.style.margin = "5px";
+          if (multiple) {
+            if (Array.isArray(currentValue) && currentValue.includes(option)) btn.classList.add("selected");
+          } else {
+            if (option === currentValue) btn.classList.add("selected");
+          }
+          btn.addEventListener("click", () => {
+            if (!multiple) {
+              container.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
+              btn.classList.add("selected");
+            } else {
+              btn.classList.toggle("selected");
+            }
+          });
+          container.appendChild(btn);
+        });
+        return container;
+      }
+      
+      function closeEditModal() {
+        document.getElementById("editModal").style.display = "none";
+      }
+      
+      function populateReview() {
+        const reviewContainer = document.getElementById("reviewSection");
+        reviewContainer.innerHTML = "";
+        if (!isLoginFlow) {
+          const accountSection = document.createElement("div");
+          accountSection.className = "review-section";
+          accountSection.innerHTML = `
+            <h3>Account & Personal Information</h3>
+            <div class="review-input"><strong>Email:</strong> ${document.getElementById("email").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="email" alt="Edit Icon" style="width:16px; height:16px;"></div>
+            <div class="review-input"><strong>First Name:</strong> ${document.getElementById("firstName").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="firstName" alt="Edit Icon" style="width:16px; height:16px;"></div>
+            <div class="review-input"><strong>Last Name:</strong> ${document.getElementById("lastName").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="lastName" alt="Edit Icon" style="width:16px; height:16px;"></div>
+            <div class="review-input"><strong>Educational Email:</strong> ${document.getElementById("eduEmail").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="eduEmail" alt="Edit Icon" style="width:16px; height:16px;"></div>
+            <div class="review-input"><strong>College:</strong> ${document.getElementById("college").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="college" alt="Edit Icon" style="width:16px; height:16px;"></div>
+            <div class="review-input"><strong>Major:</strong> ${document.getElementById("major").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="major" alt="Edit Icon" style="width:16px; height:16px;"></div>
+            <div class="review-input"><strong>User ID:</strong> ${document.getElementById("userID").value || "Not available"}</div>
+            <div class="review-input"><strong>Profile Picture:</strong> ${document.getElementById("profilePicture").files[0] ? document.getElementById("profilePicture").files[0].name : "No file selected"}</div>
+          `;
+          reviewContainer.appendChild(accountSection);
+        }
+        const projectTypeSection = document.createElement("div");
+        projectTypeSection.className = "review-section";
+        projectTypeSection.innerHTML = `
+          <h3>Project Type</h3>
+          <div class="review-input"><strong>Selected:</strong> ${document.getElementById("projectTypeInput").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="projectTypeInput" alt="Edit Icon" style="width:16px; height:16px;"></div>
+        `;
+        reviewContainer.appendChild(projectTypeSection);
+        const overviewSection = document.createElement("div");
+        overviewSection.className = "review-section";
+        overviewSection.innerHTML = `
+          <h3>Project Overview</h3>
+          <div class="review-input"><strong>Project Title:</strong> ${document.getElementById("projectTitle").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="projectTitle" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>Tagline:</strong> ${document.getElementById("tagline").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="tagline" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>Description:</strong> ${document.getElementById("description").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="description" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>Contact Email:</strong> ${document.getElementById("123-ProjectContactEmail").value || "Not provided"} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="123-ProjectContactEmail" alt="Edit Icon" style="width:16px; height:16px;"></div>
+        `;
+        reviewContainer.appendChild(overviewSection);
+        const detailsSection = document.createElement("div");
+        detailsSection.className = "review-section";
+        detailsSection.innerHTML = `
+          <h3>Project Details</h3>
+          <div class="review-input"><strong>Mission Type:</strong> ${document.getElementById("missionType").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="missionType" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>Field(s):</strong> ${document.getElementById("industryInput").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="industryInput" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>Number of Participants:</strong> ${document.getElementById("numParticipants").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="numParticipants" alt="Edit Icon" style="width:16px; height:16px;"></div>
+        `;
+        reviewContainer.appendChild(detailsSection);
+        const socialSection = document.createElement("div");
+        socialSection.className = "review-section";
+        socialSection.innerHTML = `
+          <h3>Social Links</h3>
+          <div class="review-input"><strong>Instagram:</strong> ${document.getElementById("instagram").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="instagram" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>LinkedIn:</strong> ${document.getElementById("linkedin").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="linkedin" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>YouTube:</strong> ${document.getElementById("youtube").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="youtube" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>TikTok:</strong> ${document.getElementById("tiktok").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="tiktok" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>GitHub:</strong> ${document.getElementById("github").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="github" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>Website:</strong> ${document.getElementById("website").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="website" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>Linktree:</strong> ${document.getElementById("linktree").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="linktree" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>Discord:</strong> ${document.getElementById("disc").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="disc" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>GroupMe:</strong> ${document.getElementById("groupme").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="groupme" alt="Edit Icon" style="width:16px; height:16px;"></div>
+          <div class="review-input"><strong>Twitter:</strong> ${document.getElementById("twitter").value} <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-field="twitter" alt="Edit Icon" style="width:16px; height:16px;"></div>
+        `;
+        reviewContainer.appendChild(socialSection);
+        const imagesSection = document.createElement("div");
+        imagesSection.className = "review-section";
+        imagesSection.innerHTML = `<h3>Image Previews</h3>`;
+        const logoPreviewImg = document.querySelector("#logoPreviewContainer img");
+        if (logoPreviewImg) {
+          const logoDiv = document.createElement("div");
+          logoDiv.className = "review-image-preview review-input";
+          logoDiv.innerHTML = `<h4>Logo:</h4> <div style="width:80px; height:80px; background-image:url('${logoPreviewImg.src}'); background-size:cover; background-position:center; border:1px solid #ccc; border-radius:8px; margin-left:8px;"></div> <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-type="logo" alt="Edit Icon" style="width:16px; height:16px;">`;
+          imagesSection.appendChild(logoDiv);
+        }
+        const profilePreviewImg = document.querySelector("#profilePreviewContainer img");
+        if (profilePreviewImg) {
+          const profileDiv = document.createElement("div");
+          profileDiv.className = "review-image-preview review-input";
+          profileDiv.innerHTML = `<h4>Profile Picture:</h4> <div style="width:80px; height:80px; background-image:url('${profilePreviewImg.src}'); background-size:cover; background-position:center; border:1px solid #ccc; border-radius:8px; margin-left:8px;"></div> <img src="https://i.imgur.com/6SAvoQw.png" class="edit-icon" data-type="profile" alt="Edit Icon" style="width:16px; height:16px;">`;
+          imagesSection.appendChild(profileDiv);
+        }
+        reviewContainer.appendChild(imagesSection);
+        reviewContainer.querySelectorAll(".edit-icon[data-field]").forEach(icon => {
+          icon.addEventListener("click", function(e) {
+            e.stopPropagation();
+            openEditModal(this.getAttribute("data-field"));
+          });
+        });
+        reviewContainer.querySelectorAll(".edit-icon[data-type]").forEach(icon => {
+          icon.addEventListener("click", function(e) {
+            e.stopPropagation();
+            triggerImageEdit(this.getAttribute("data-type"));
+          });
+        });
+      }
+      
+      function updateLiveProjectCard() {
+        document.getElementById("cardTitle").textContent = document.getElementById("projectTitle").value || "Project Title";
+        document.getElementById("cardTagline").textContent = document.getElementById("tagline").value || "Tagline goes here...";
+        document.getElementById("cardDescription").textContent = document.getElementById("description").value || "Project description...";
+        const cta = document.getElementById("cta").value.trim();
+        const demoLink = document.getElementById("demoLink").value.trim();
+        let actionButtonHTML = "";
+        if(cta !== "") {
+          actionButtonHTML = `<button class="visit-button" onclick="window.open('${demoLink}', '_blank')">${cta}</button>`;
+        }
+        document.getElementById("cardActionButtonContainer").innerHTML = actionButtonHTML;
+        adjustVisitButtonFontSize();
+        const participants = document.getElementById("numParticipants").value.trim();
+        if(participants !== "") {
+          document.getElementById("cardParticipantsInfo").innerHTML = `<strong>Participants:</strong> ${participants}`;
+        } else {
+          document.getElementById("cardParticipantsInfo").innerHTML = "";
+        }
+        const contactEmail = document.getElementById("123-ProjectContactEmail").value.trim();
+        if(contactEmail !== "") {
+          document.getElementById("cardEmailInfo").innerHTML = `<strong>Project Email:</strong> ${contactEmail}`;
+        } else {
+          document.getElementById("cardEmailInfo").innerHTML = "";
+        }
+        let tags = [];
+        const missionType = document.getElementById("missionType").value.trim();
+        if(missionType !== "") { tags.push(`<span class="tag">${missionType}</span>`); }
+        const industryValue = document.getElementById("industryInput").value.trim();
+        if(industryValue !== "") {
+          const industryTags = industryValue.split(",").map(s => s.trim()).filter(Boolean);
+          industryTags.forEach(tag => tags.push(`<span class="tag">${tag}</span>`));
+        }
+        document.getElementById("cardTags").innerHTML = tags.join(" ");
+        const socialsContainer = document.getElementById("cardSocials");
+        const socialPlatforms = [
+          { id: "instagram", icon: "https://i.imgur.com/nqwRnQE.png" },
+          { id: "linkedin", icon: "https://i.imgur.com/Gy8GfvE.png" },
+          { id: "youtube", icon: "https://i.imgur.com/0N1oxHH.png" },
+          { id: "tiktok", icon: "https://i.imgur.com/F1J2FqH.png" },
+          { id: "github", icon: "https://i.imgur.com/65TtGM5.png" },
+          { id: "website", icon: "https://i.imgur.com/eoUtzpJ.png" },
+          { id: "linktree", icon: "https://i.imgur.com/yr2y17y.png" },
+          { id: "disc", icon: "https://i.imgur.com/awUgfp5.png" },
+          { id: "groupme", icon: "https://i.imgur.com/V7axoql.png" },
+          { id: "twitter", icon: "https://i.imgur.com/uOSAeMX.png" }
+        ];
+        let socialHTML = "";
+        socialPlatforms.forEach(platform => {
+          const url = document.getElementById(platform.id).value.trim();
+          if(url !== "") {
+            socialHTML += `<div class="social-icon" style="-webkit-mask-image: url(${platform.icon}); mask-image: url(${platform.icon});" onclick="window.open('${url}', '_blank')"></div>`;
+          }
+        });
+        socialsContainer.innerHTML = socialHTML;
+      }
+      
+      function adjustVisitButtonFontSize() {
+        const btn = document.querySelector("#cardActionButtonContainer .visit-button");
+        if (!btn) return;
+        const fixedWidth = btn.clientWidth;
+        let fontSize = 16;
+        btn.style.fontSize = fontSize + "px";
+        const tempSpan = document.createElement("span");
+        tempSpan.style.visibility = "hidden";
+        tempSpan.style.whiteSpace = "nowrap";
+        tempSpan.style.fontFamily = window.getComputedStyle(btn).fontFamily;
+        tempSpan.style.fontSize = fontSize + "px";
+        tempSpan.innerText = btn.innerText;
+        document.body.appendChild(tempSpan);
+        while (tempSpan.offsetWidth > fixedWidth && fontSize > 10) {
+          fontSize -= 1;
+          btn.style.fontSize = fontSize + "px";
+          tempSpan.style.fontSize = fontSize + "px";
+        }
+        document.body.removeChild(tempSpan);
+      }
+      
+      function attachLiveCardListeners() {
+        const fields = ["projectTitle", "tagline", "description", "missionType", "numParticipants", "123-ProjectContactEmail", "cta", "demoLink", "instagram", "linkedin", "youtube", "tiktok", "github", "website", "linktree", "disc", "groupme", "twitter", "industryInput"];
+        fields.forEach(fieldId => {
+          const el = document.getElementById(fieldId);
+          if (el) { el.addEventListener("input", updateLiveProjectCard); }
+        });
+      }
+      
+      function triggerImageEdit(type) {
+        if (type === "logo") { document.getElementById("logoImage").click(); }
+        else if (type === "profile") { document.getElementById("profilePicture").click(); }
+      }
+      
+      function openModalWithFile(file, type) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById("cropImage").src = e.target.result;
+          currentImageType = type;
+          document.getElementById("modalButtons").style.display = "block";
+          document.getElementById("cropControls").style.display = "none";
+          document.getElementById("cropModal").classList.remove("hidden");
+          document.getElementById("cropModal").style.display = "flex";
+        };
+        reader.readAsDataURL(file);
+      }
+      
+      function updatePreview(type, file, dataUrl) {
+        const container = document.getElementById(type === "logo" ? "logoPreviewContainer" : "profilePreviewContainer");
+        container.innerHTML = "";
+        const img = document.createElement("img");
+        img.src = dataUrl;
+        img.className = "image-preview";
+        img.style.width = "80px";
+        img.style.height = "80px";
+        img.style.objectFit = "cover";
+        img.addEventListener("click", () => openModalWithFile(file, type));
+        const span = document.createElement("span");
+        span.className = "file-name";
+        span.textContent = file.name;
+        span.addEventListener("click", () => openModalWithFile(file, type));
+        container.appendChild(img);
+        container.appendChild(span);
+        if (type === "logo") {
+          const cardLogo = document.getElementById("cardLogo");
+          cardLogo.style.backgroundImage = "url(" + dataUrl + ")";
+          cardLogo.style.backgroundColor = "transparent";
+          cardLogo.style.backgroundSize = "cover";
+          cardLogo.style.backgroundPosition = "center";
+          updateLiveProjectCard();
+        }
+      }
+      
+      function closeModal() {
+        if (currentCropper) { currentCropper.destroy(); currentCropper = null; }
+        document.getElementById("cropModal").classList.add("hidden");
+        document.getElementById("cropModal").style.display = "none";
+      }
+      
+      async function finalizeSubmission() {
+        console.log("finalizeSubmission called");
+        showLoading(true);
+        startLoadingOverlayCycle();
+        try {
+          if (croppedLogoData || document.getElementById("logoImage").files.length > 0) {
+            let imageData;
+            if (croppedLogoData) { imageData = croppedLogoData.split(',')[1]; }
+            else {
+              const base64Data = await fileToBase64(document.getElementById("logoImage").files[0]);
+              imageData = base64Data.split(',')[1];
+            }
+            const logoLink = await uploadImageToImgur(imageData, "logo");
+            if (!logoLink) return;
+            document.getElementById("logoURL").value = logoLink;
+          }
+          if (croppedProfileData || document.getElementById("profilePicture").files.length > 0) {
+            let imageData;
+            if (croppedProfileData) { imageData = croppedProfileData.split(',')[1]; }
+            else {
+              const base64Data = await fileToBase64(document.getElementById("profilePicture").files[0]);
+              imageData = base64Data.split(',')[1];
+            }
+            const profileLink = await uploadImageToImgur(imageData, "profile");
+            if (!profileLink) return;
+            document.getElementById("profilePictureURL").value = profileLink;
+          }
+          if (!document.getElementById("projectID").value) {
+            document.getElementById("projectID").value = generateProjectID();
+          }
+          formSubmitted = true;
+          document.getElementById("submissionForm").submit();
+        } catch (err) {
+          console.error("Error in final submission:", err);
+          showLoading(false);
+          stopLoadingOverlayCycle();
+        }
+      }
+      
+      async function uploadImageToImgur(base64Image, type) {
+        try {
+          const formData = new FormData();
+          formData.append('image', base64Image);
+          formData.append('type', 'base64');
+          const response = await fetch('https://api.imgur.com/3/image', {
+            method: 'POST',
+            credentials: 'omit',
+            headers: { Authorization: `Client-ID ${CLIENT_ID}` },
+            body: formData
+          });
+          const json = await response.json();
+          if (json.success) {
+            console.log(`${type} image uploaded, URL:`, json.data.link);
+            return json.data.link;
+          } else {
+            alert(`Imgur upload error (${type}): ${json.data.error}`);
+            showLoading(false);
+            stopLoadingOverlayCycle();
+            return null;
+          }
+        } catch (err) {
+          alert(`Error uploading ${type} image to Imgur: ${err.message}`);
+          showLoading(false);
+          stopLoadingOverlayCycle();
+          return null;
+        }
+      }
+      
+      function submissionSuccess() {
+        stopLoadingOverlayCycle();
+        showLoading(false);
+        document.querySelector(".form-container").style.display = "none";
+        document.getElementById("liveProjectCard").style.display = "none";
+        const successDiv = document.getElementById("successMessage");
+        successDiv.style.display = "block";
+        document.getElementById("newProjectBtn").addEventListener("click", () => {
+          resetProjectSteps();
+          advanceToProjectTypeStep();
+          successDiv.style.display = "none";
+          document.querySelector(".form-container").style.display = "block";
+        });
+        document.getElementById("exploreProjectsBtn").addEventListener("click", () => {
+          window.location.href = "dashboard.html";
+        });
+      }
+      
+      function resetProjectSteps() {
+        const fieldsToClear = ["projectTitle", "tagline", "description", "123-ProjectContactEmail", "cta", "demoLink", "missionType", "numParticipants", "industryInput", "instagram", "linkedin", "youtube", "tiktok", "github", "website", "linktree", "disc", "groupme", "twitter"];
+        fieldsToClear.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { el.value = ""; }
+        });
+        updateLiveProjectCard();
+      }
+      
+      let loadingOverlayInterval;
+      function startLoadingOverlayCycle() {
+        const loadingOverlayMessage = document.getElementById("loadingOverlayMessage");
+        const messages = [
+          "Submitting your project...",
+          "Reviewing your masterpiece...",
+          "Almost done, hold tight...",
+          "Finalizing submission...",
+          "Warming up the servers...",
+          "Fetching all the memes...",
+          "Summoning unicorns...",
+          "Reticulating splines...",
+          "Aligning your pixels...",
+          "Brewing some coffee..."
+        ];
+        let index = 0;
+        loadingOverlayInterval = setInterval(() => {
+          loadingOverlayMessage.textContent = messages[index];
+          index = (index + 1) % messages.length;
+        }, 3000);
+      }
+      function stopLoadingOverlayCycle() {
+        clearInterval(loadingOverlayInterval);
+      }
+      
+      function openPreviewModal() {
+        const title = document.getElementById("projectTitle").value;
+        const tagline = document.getElementById("tagline").value;
+        const description = document.getElementById("description").value;
+        const demoLink = document.getElementById("demoLink").value;
+        const cta = document.getElementById("cta").value;
+        const visitText = cta.trim() !== "" ? cta : "Visit";
+        let logoSrc = "https://images.vexels.com/media/users/3/137617/isolated/preview/c45afb857e72b86e87baaf255f71ff37-geometric-logo-abstract-by-vexels.png";
+        const logoPreviewImg = document.querySelector("#logoPreviewContainer img");
+        if (logoPreviewImg) { logoSrc = logoPreviewImg.src; }
+        const industry = document.getElementById("industryInput").value;
+        const participants = document.getElementById("numParticipants").value;
+        const contactEmail = document.getElementById("123-ProjectContactEmail").value;
+        const school = document.getElementById("college").value;
+    
+        const headerHTML = `
+          <div class="title-container assemble-item">
+            <div class="card-logo" style="background-image: url('${logoSrc}'); background-size: cover; background-position: center; border-radius: 8px; width:100px; height:100px;"></div>
+            <h3>${title}</h3>
+          </div>
+          <div class="assemble-item">
+            ${demoLink.trim() !== ""
+              ? `<button class="visit-button" onclick="window.open('${demoLink}', '_blank')">${cta}</button>`
+              : `<button class="visit-button">${visitText}</button>`}
+          </div>
+        `;
+        document.getElementById("previewModalHeader").innerHTML = headerHTML;
+    
+        const descriptionHTML = `<p class="assemble-item" id="previewModalDescription">${tagline} — ${description}</p>`;
+        const previewDescElem = document.getElementById("previewModalDescription");
+        previewDescElem.innerHTML = "";
+        previewDescElem.insertAdjacentHTML('afterbegin', descriptionHTML);
+    
+        let infoHTML = `
+          <div class="assemble-item project-school">
+            <img class="icon" src="https://i.imgur.com/EkoIEZj.png" alt="School Icon"> ${school}
+          </div>
+          <div class="assemble-item project-participants">
+            <img class="icon" src="https://i.imgur.com/Yxqk42o.png" alt="Participants Icon" style="width:16px; height:16px;"> ${participants}
+          </div>
+          <div class="assemble-item project-contact" style="position: relative;">
+            <img class="contact-icon" src="https://i.imgur.com/va70cTC.png" alt="Email Icon" style="width:16px; height:16px; margin-right:5px; filter: grayscale(100%) brightness(0.6);">
+            <button class="view-email-btn">View Email Address</button>
+            <span class="email-address" data-email="${contactEmail}" style="display:none; cursor:pointer; position: relative;">
+              ${contactEmail}
+              <span class="copy-tooltip">Click to copy</span>
+            </span>
+          </div>
+        `;
+        const tagsArr = industry.split(",").map(s => s.trim()).filter(Boolean);
+        if (tagsArr.length > 0) {
+          infoHTML += `<div class="assemble-item tags">`;
+          tagsArr.forEach(tag => { infoHTML += `<span class="tag">${tag}</span>`; });
+          infoHTML += `</div>`;
+        }
+        document.getElementById("previewModalProjectInfo").innerHTML = infoHTML;
+    
+        let socialHTML = "";
+        const socialPlatforms = [
+          { id: "instagram", icon: "https://i.imgur.com/nqwRnQE.png" },
+          { id: "linkedin", icon: "https://i.imgur.com/Gy8GfvE.png" },
+          { id: "youtube", icon: "https://i.imgur.com/0N1oxHH.png" },
+          { id: "tiktok", icon: "https://i.imgur.com/F1J2FqH.png" },
+          { id: "github", icon: "https://i.imgur.com/65TtGM5.png" },
+          { id: "website", icon: "https://i.imgur.com/eoUtzpJ.png" },
+          { id: "linktree", icon: "https://i.imgur.com/yr2y17y.png" },
+          { id: "disc", icon: "https://i.imgur.com/awUgfp5.png" },
+          { id: "groupme", icon: "https://i.imgur.com/V7axoql.png" },
+          { id: "twitter", icon: "https://i.imgur.com/uOSAeMX.png" }
+        ];
+        socialPlatforms.forEach(platform => {
+          const url = document.getElementById(platform.id).value.trim();
+          if(url !== "") {
+            socialHTML += `<div class="social-icon assemble-item" style="-webkit-mask-image: url(${platform.icon}); mask-image: url(${platform.icon});" onclick="window.open('${url}', '_blank')"></div>`;
+          }
+        });
+        document.getElementById("previewModalSocialLinks").innerHTML = socialHTML;
+    
+        const viewEmailBtn = document.querySelector("#previewModal .view-email-btn");
+        const emailSpan = document.querySelector("#previewModal .email-address");
+        if (viewEmailBtn && emailSpan) {
+          viewEmailBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            openCaptchaModal();
+            viewEmailBtn.style.display = "none";
+          });
+          emailSpan.addEventListener("click", function(e) {
+            e.stopPropagation();
+            const emailText = emailSpan.dataset.email;
+            navigator.clipboard.writeText(emailText).then(() => {
+              const tooltip = emailSpan.querySelector(".copy-tooltip");
+              tooltip.textContent = "Copied!";
+              setTimeout(() => { tooltip.textContent = "Click to copy"; }, 2000);
+            });
+          });
+        }
+    
+        const items = document.querySelectorAll("#previewModal .modal-content > :not(.close)");
+        items.forEach(item => {
+          item.classList.remove("assemble-item");
+          void item.offsetWidth;
+          item.classList.add("assemble-item");
+        });
+        document.getElementById("previewModal").style.display = "block";
+      }
+      
+      function openCaptchaModal() {
+        const captchaModal = document.getElementById("captchaModal");
+        const captchaConfirmBtn = document.getElementById("captchaConfirmBtn");
+        captchaModal.style.display = "block";
+        captchaConfirmBtn.textContent = "Verifying...";
+        captchaConfirmBtn.disabled = true;
+        setTimeout(() => {
+          captchaModal.style.display = "none";
+          captchaConfirmBtn.disabled = false;
+          const emailSpan = document.querySelector("#previewModal .email-address");
+          if (emailSpan) { emailSpan.style.display = "inline"; }
+        }, 2000);
+      }
+      
+      function toggleCustomAction(show) {
+        document.getElementById("customActionFields").classList.toggle("hidden", !show);
+      }
+      function selectCustomActionChoice(choice, button) {
+        const container = button.parentElement;
+        Array.from(container.getElementsByTagName("button")).forEach(btn => btn.classList.remove("selected"));
+        button.classList.add("selected");
+        toggleCustomAction(choice);
+      }
+      
+      function attachEventListeners() {
+        document.getElementById("editModalSave").addEventListener("click", function() {
+          let newValue = "";
+          if (currentEditInputElement.tagName.toLowerCase() === "div" && currentEditField === "industryInput") {
+            const selectedButtons = currentEditInputElement.querySelectorAll("button.selected");
+            newValue = Array.from(selectedButtons).map(btn => btn.textContent.trim()).join(", ");
+          } else if (currentEditInputElement.tagName.toLowerCase() === "div" && currentEditField === "projectTypeInput") {
+            const selectedButton = currentEditInputElement.querySelector("button.selected");
+            newValue = selectedButton ? selectedButton.textContent.trim() : "";
+          } else if (currentEditInputElement.tagName.toLowerCase() === "div") {
+            const radios = currentEditInputElement.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => { if (radio.checked) { newValue = radio.value; } });
+          } else {
+            newValue = currentEditInputElement.value;
+          }
+          const fieldElement = document.getElementById(currentEditField);
+          if (fieldElement) { fieldElement.value = newValue; }
+          closeEditModal();
+        });
+        document.getElementById("editModalClose").addEventListener("click", closeEditModal);
+        window.addEventListener("click", function(e) {
+          if (e.target === document.getElementById("editModal")) { closeEditModal(); }
+        });
+    
+        const logoImageInput = document.getElementById("logoImage");
+        logoImageInput.addEventListener("change", function() {
+          if (this.files && this.files.length > 0) { openModalWithFile(this.files[0], "logo"); }
+        });
+        const profilePictureInput = document.getElementById("profilePicture");
+        profilePictureInput.addEventListener("change", function() {
+          if (this.files && this.files.length > 0) { openModalWithFile(this.files[0], "profile"); }
+        });
+    
+        document.getElementById("useOriginalBtn").addEventListener("click", function() {
+          if (currentImageType === "logo") {
+            updatePreview("logo", document.getElementById("logoImage").files[0], document.getElementById("cropImage").src);
+          } else if (currentImageType === "profile") {
+            updatePreview("profile", document.getElementById("profilePicture").files[0], document.getElementById("cropImage").src);
+          }
+          closeModal();
+        });
+        document.getElementById("openEditBtn").addEventListener("click", function() {
+          document.getElementById("modalButtons").style.display = "none";
+          document.getElementById("cropControls").style.display = "block";
+          if (currentCropper) { currentCropper.destroy(); }
+          currentCropper = new Cropper(document.getElementById("cropImage"), { aspectRatio: NaN, viewMode: 1 });
+        });
+        document.getElementById("rotateLeftBtn").addEventListener("click", function() {
+          if (currentCropper) { currentCropper.rotate(-45); }
+        });
+        document.getElementById("rotateRightBtn").addEventListener("click", function() {
+          if (currentCropper) { currentCropper.rotate(45); }
+        });
+        document.getElementById("cropConfirmBtn").addEventListener("click", function() {
+          if (currentCropper) {
+            const canvas = currentCropper.getCroppedCanvas();
+            const croppedDataUrl = canvas.toDataURL();
+            if (currentImageType === "logo") {
+              croppedLogoData = croppedDataUrl;
+              updatePreview("logo", document.getElementById("logoImage").files[0], croppedDataUrl);
+            } else if (currentImageType === "profile") {
+              croppedProfileData = croppedDataUrl;
+              updatePreview("profile", document.getElementById("profilePicture").files[0], croppedDataUrl);
+            }
+            currentCropper.destroy();
+            currentCropper = null;
+            closeModal();
+          }
+        });
+        document.getElementById("cropCancelBtn").addEventListener("click", function() {
+          if (currentCropper) { currentCropper.destroy(); currentCropper = null; }
+          document.getElementById("cropControls").style.display = "none";
+          document.getElementById("modalButtons").style.display = "block";
+        });
+        document.getElementById("captchaClose").addEventListener("click", function() {
+          document.getElementById("captchaModal").style.display = "none";
+        });
+        window.addEventListener("click", function(e) {
+          if (e.target === document.getElementById("captchaModal")) {
+            document.getElementById("captchaModal").style.display = "none";
+          }
+        });
+      }
+    
+      document.addEventListener("DOMContentLoaded", function() {
+        attachEventListeners();
+        document.getElementById("hidden_iframe").onload = function() {
+          if (formSubmitted) { submissionSuccess(); }
+        };
+      });
+    
+      window.advanceToProjectTypeStep = function() {
+        const projectTypeStep = flowSteps.indexOf("stepProjectType");
+        if (projectTypeStep !== -1) { showStep(projectTypeStep); }
+      };
+      
+      window.showStep = showStep;
+      window.setFlow = setFlow;
+      window.prevStep = prevStep;
+      window.nextStep = nextStep;
+      window.checkAccountCreation = checkAccountCreation;
+      window.attemptLogin = attemptLogin;
+      window.forgotPassword = forgotPassword;
+      window.toggleSelection = toggleSelection;
+      window.openEditModal = openEditModal;
+      window.triggerImageEdit = triggerImageEdit;
+      window.finalizeSubmission = finalizeSubmission;
+      window.selectCustomActionChoice = selectCustomActionChoice;
+      window.openPreviewModal = openPreviewModal;
+      window.resetProjectSteps = resetProjectSteps;
+    })();
+  </script>
+  
+  <!-- ========================= -->
+  <!-- Navbar & Session Integration Script -->
+  <script>
+    const dashboardApiUrl = "https://sheet2api.com/v1/rkmbUqHQAC3C/submission-form-responses";
+    let currentUser = null;
+    
+    const navbarLoginForm = document.getElementById("loginForm");
+    const navbarLoginArea = document.getElementById("navbarLoginArea");
+    
+    async function doLogin(email, password) {
+      try {
+        const response = await fetch(dashboardApiUrl);
+        const data = await response.json();
+        const userProjects = data.filter(item =>
+          item.Email && item.Email.toLowerCase() === email && item.Password === password
+        );
+        if (userProjects.length === 0) {
+          alert("Invalid credentials or no projects found.");
+        } else {
+          currentUser = {
+            firstName: userProjects[0]["First Name"],
+            lastName: userProjects[0]["Last Name"],
+            profilePicture: userProjects[0]["Profile Picture"],
+            email: userProjects[0].Email,
+            school: userProjects[0]["College or University Name"],
+            major: userProjects[0]["Major"]
+          };
+          localStorage.setItem("userEmail", email);
+          localStorage.setItem("userPassword", password);
+          localStorage.setItem("isLoggedIn", "true");
+          updateNavbarAfterLogin();
+          document.getElementById("firstName").value = currentUser.firstName || "";
+          document.getElementById("lastName").value = currentUser.lastName || "";
+          document.getElementById("eduEmail").value = currentUser.email || "";
+          document.getElementById("college").value = currentUser.school || "";
+          document.getElementById("major").value = currentUser.major || "";
+          document.getElementById("email").value = email;
+          document.getElementById("password").value = password;
+          document.getElementById("userID").value = userProjects[0]["User ID"] || "";
+          document.getElementById("profilePictureURL").value = userProjects[0]["Profile Picture"] || "";
+          advanceToProjectTypeStep();
+        }
+      } catch (err) {
+        console.error("Error during login:", err);
+      }
+    }
+    
+    navbarLoginForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+      const password = document.getElementById("loginPassword").value.trim();
+      document.getElementById("pageLoader").style.display = "flex";
+      doLogin(email, password).then(() => {
+        document.getElementById("pageLoader").style.display = "none";
+      });
+    });
+    
+    function updateNavbarAfterLogin() {
+      navbarLoginArea.innerHTML = `
+        <div class="navbar-actions">
+          <button id="createBtn" class="create-btn">Create</button>
+          <img src="https://i.imgur.com/3ityLS2.png" alt="Notifications" class="notification-icon" id="notificationIcon" />
+          <span class="user-name">${currentUser.firstName}</span>
+          <div id="profileDropdown" class="profile-dropdown">
+            ${renderUserAvatar(currentUser)}
+            <div id="profileMenu" class="profile-menu">
+              <div class="dropdown-item" id="profileMenuItem">Profile</div>
+              <div class="dropdown-item" id="dashboardMenuItem"><a href="#">Dashboard</a></div>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-item" id="logoutMenuItem">Logout</div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById("profileDropdown").addEventListener("click", function(e) {
+        const menu = document.getElementById("profileMenu");
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+        e.stopPropagation();
+      });
+      // Added event listener for the Profile menu item
+      document.getElementById("profileMenuItem").addEventListener("click", function(e) {
+        e.stopPropagation();
+        openProfileModal();
+      });
+      document.getElementById("logoutMenuItem").addEventListener("click", function(e) {
+        e.stopPropagation();
+        openLogoutModal();
+      });
+      document.getElementById("createBtn").addEventListener("click", function(e) {
+        openCreateModal();
+        e.stopPropagation();
+      });
+      document.getElementById("notificationIcon").addEventListener("click", function(e) {
+        openNotificationModal();
+        e.stopPropagation();
+      });
+    }
+    
+    function renderUserAvatar(user) {
+      if (user.profilePicture && user.profilePicture.trim() !== "") {
+        return `<div class="navbar-profile"><img src="${user.profilePicture}" alt="${user.firstName} ${user.lastName}" /></div>`;
+      } else {
+        return `<div class="navbar-profile">${getInitials(user.firstName, user.lastName)}</div>`;
+      }
+    }
+    
+    function getInitials(first, last) {
+      let initials = "";
+      if (first && first.length > 0) initials += first[0].toUpperCase();
+      if (last && last.length > 0) initials += last[0].toUpperCase();
+      return initials;
+    }
+    
+    function logout() {
+      localStorage.clear();
+      currentUser = null;
+      navbarLoginArea.innerHTML = `
+        <form id="loginForm">
+          <input type="text" id="loginEmail" placeholder="Email" required />
+          <input type="password" id="loginPassword" placeholder="Password" required />
+          <button type="submit">Login</button>
+        </form>
+      `;
+      document.getElementById("loginForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+        const password = document.getElementById("loginPassword").value.trim();
+        doLogin(email, password);
+      });
+      showStep(0);
+    }
+    
+    // Close profile modal if clicking outside it
+    window.addEventListener("click", function(e) {
+      if (e.target === document.getElementById("profileModal")) {
+        document.getElementById("profileModal").style.display = "none";
+      }
+    });
+    
+    window.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("pageLoader").style.display = "flex";
+      const loadingMessages = [
+        "Warming up the servers...",
+        "Fetching all the memes...",
+        "Summoning unicorns...",
+        "Reticulating splines...",
+        "Aligning your pixels...",
+        "Brewing some coffee..."
+      ];
+      let msgIndex = 0;
+      setInterval(() => {
+        document.getElementById("loadingMessage").textContent = loadingMessages[msgIndex];
+        msgIndex = (msgIndex + 1) % loadingMessages.length;
+      }, 3000);
+      
+      setTimeout(() => {
+        if (localStorage.getItem("isLoggedIn") === "true") {
+          const savedEmail = localStorage.getItem("userEmail");
+          const savedPassword = localStorage.getItem("userPassword");
+          if (savedEmail && savedPassword) {
+            doLogin(savedEmail, savedPassword).then(() => {
+              document.getElementById("pageLoader").style.display = "none";
+            });
+          } else {
+            document.getElementById("pageLoader").style.display = "none";
+          }
+        } else {
+          document.getElementById("pageLoader").style.display = "none";
+        }
+      }, 1000);
+    });
+  </script>
+  
+  <!-- ========================= -->
+  <!-- Loader Message Cycling for Submission Overlay -->
+  <script>
+    window.addEventListener("DOMContentLoaded", function(){
+      const loadingOverlayMessages = [
+        "Submitting your project...",
+        "Reviewing your masterpiece...",
+        "Almost done, hold tight...",
+        "Finalizing submission...",
+        "Warming up the servers...",
+        "Fetching all the memes...",
+        "Summoning unicorns...",
+        "Reticulating splines...",
+        "Aligning your pixels...",
+        "Brewing some coffee..."
+      ];
+      setInterval(() => {
+        if(document.getElementById("loadingOverlay").style.display === "flex"){
+          const message = loadingOverlayMessages[Math.floor(Math.random() * loadingOverlayMessages.length)];
+          document.getElementById("loadingOverlayMessage").textContent = message;
+        }
+      }, 3000);
+    });
+  </script>
+  
+  <!-- ========================= -->
+  <!-- Additional Modals Script -->
+  <script>
+    // Logout Confirmation Modal
+    function openLogoutModal() {
+      document.getElementById("logoutModal").style.display = "block";
+    }
+    document.getElementById("logoutModalClose").addEventListener("click", function() {
+      document.getElementById("logoutModal").style.display = "none";
+    });
+    document.getElementById("cancelLogoutBtn").addEventListener("click", function() {
+      document.getElementById("logoutModal").style.display = "none";
+    });
+    document.getElementById("confirmLogoutBtn").addEventListener("click", function() {
+      logout();
+      document.getElementById("logoutModal").style.display = "none";
+    });
+    
+    // Profile Modal
+    function openProfileModal() {
+      const profileContent = document.getElementById("profileContent");
+      profileContent.innerHTML = `
+        <div style="text-align:center; margin-bottom:15px;">
+          ${currentUser && currentUser.profilePicture && currentUser.profilePicture.trim() !== "" ? 
+            `<img src="${currentUser.profilePicture}" alt="${currentUser.firstName} ${currentUser.lastName}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">` : 
+            `<div style="width:80px; height:80px; border-radius:50%; background:#ccc; display:flex; align-items:center; justify-content:center; font-size:2em; color:#fff;">${currentUser ? currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0) : ""}</div>`
+          }
+        </div>
+        <p><strong>Name:</strong> ${currentUser ? currentUser.firstName + " " + currentUser.lastName : ""}</p>
+        <p><strong>Email:</strong> ${currentUser ? currentUser.email : ""}</p>
+        <p><strong>University:</strong> ${currentUser ? currentUser.school : ""}</p>
+        <p><strong>Major:</strong> ${currentUser ? currentUser.major : ""}</p>
+      `;
+      document.getElementById("profileModal").style.display = "block";
+    }
+    document.getElementById("profileModalClose").addEventListener("click", function() {
+      document.getElementById("profileModal").style.display = "none";
+    });
+    
+    // Create Modal
+    function openCreateModal() {
+      document.getElementById("createModal").style.display = "block";
+    }
+    document.getElementById("createModalClose").addEventListener("click", function() {
+      document.getElementById("createModal").style.display = "none";
+    });
+    
+    // Notification Modal
+    function openNotificationModal() {
+      document.getElementById("notificationModal").style.display = "block";
+    }
+    document.getElementById("notificationModalClose").addEventListener("click", function() {
+      document.getElementById("notificationModal").style.display = "none";
+    });
+  </script>
+</body>
+</html>
