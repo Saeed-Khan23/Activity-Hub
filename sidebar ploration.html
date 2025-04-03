@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- Ensures proper scaling on mobile devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Project Discovery Platform</title>
   <!-- Google Fonts -->
@@ -40,7 +41,7 @@
       line-height: var(--line-height);
       background-color: #f4f4f4;
       color: var(--text-color);
-      overflow-x: hidden;
+      overflow-x: hidden; /* prevent horizontal scrolling */
     }
     a {
       text-decoration: none;
@@ -71,7 +72,8 @@
       justify-content: space-between;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       z-index: 1500;
-      flex-wrap: wrap;
+      /* Remove wrapping so items don’t stack */
+      flex-wrap: nowrap;
     }
     .navbar-brand {
       display: flex;
@@ -220,6 +222,10 @@
     .sidebar.collapsed {
       width: 60px;
     }
+    /* Always center icons when sidebar is collapsed */
+    .sidebar.collapsed li a {
+      justify-content: center;
+    }
     .sidebar ul {
       list-style: none;
       padding: 0;
@@ -229,7 +235,7 @@
     .sidebar li {
       margin-bottom: 20px;
     }
-    /* Sidebar links will be updated dynamically and include full width and padding */
+    /* Sidebar links updated with full width, padding, and hover effect */
     .sidebar li a {
       color: #fff;
       font-size: 1em;
@@ -241,7 +247,6 @@
       padding: 10px 15px;
       border-radius: 4px;
     }
-    /* Increase the hover area with a background effect */
     .sidebar li a:hover {
       background-color: rgba(255, 255, 255, 0.15);
       transition: background-color 0.3s ease;
@@ -258,7 +263,7 @@
     }
     .sidebar.collapsed li a .sidebar-text,
     .sidebar.collapsed li a .badge {
-      opacity: 0;
+      display: none;
     }
     .badge {
       background-color: var(--accent-color);
@@ -269,9 +274,11 @@
       margin-left: 5px;
       text-transform: uppercase;
     }
-    /* Ensure Careers stays at the bottom */
-    .sidebar ul li:last-child {
-      margin-top: auto;
+    /* Hide badge on mobile */
+    @media screen and (max-width: 768px) {
+      .sidebar li a .badge {
+        display: none;
+      }
     }
     
     /* ========================= */
@@ -1013,6 +1020,104 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    
+    /* ========================= */
+    /* Logo Modal Image Fix */
+    /* ========================= */
+    #logoModalImage {
+      max-width: 100%;
+      max-height: 80vh;
+      display: block;
+      margin: 0 auto;
+      object-fit: contain;
+    }
+    
+    /* ========================= */
+    /* MOBILE RESPONSIVE STYLES */
+    /* ========================= */
+    @media screen and (max-width: 768px) {
+      nav {
+        flex-direction: row;
+        align-items: center;
+        padding: 8px 10px;
+      }
+      .navbar-brand h1 {
+        font-size: 1.5em;
+      }
+      .navbar-login {
+        margin-top: 0;
+        font-size: 0.9em;
+      }
+      .sidebar {
+        width: 60px;
+        padding: 10px;
+      }
+      .sidebar li a {
+        padding: 8px 10px;
+        justify-content: center;
+      }
+      .main-content {
+        margin-left: 80px;
+        padding: 10px;
+      }
+      .modal-content {
+        width: 95%;
+        padding: 15px;
+      }
+      #logoModalImage {
+        max-height: 60vh;
+      }
+    }
+    
+    @media screen and (max-width: 480px) {
+      nav {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 8px;
+      }
+      .navbar-brand h1 {
+        font-size: 1.3em;
+      }
+      .navbar-login input {
+        width: auto;
+        font-size: 0.85em;
+        padding: 6px;
+      }
+      .navbar-login button {
+        font-size: 0.85em;
+        padding: 6px 10px;
+      }
+      /* Ensure sidebar is collapsed (icons only) and always visible */
+      .sidebar {
+        width: 60px;
+        padding: 10px;
+      }
+      .sidebar li a {
+        justify-content: center;
+        padding: 8px 10px;
+      }
+      .sidebar li a .sidebar-text,
+      .sidebar li a .badge {
+        display: none;
+      }
+      .main-content {
+        margin-left: 60px; /* on very small screens, adjust main content margin */
+        padding: 10px;
+      }
+      /* Bottom sheet modals: positioned fixed at the bottom, to the right of the sidebar */
+      .modal-content {
+        position: fixed;
+        bottom: 0;
+        left: 60px; /* start after the sidebar */
+        right: 0;
+        margin: 0;
+        border-radius: 16px 16px 0 0;
+        max-height: 80vh;
+        overflow-y: auto;
+        padding: 15px;
+      }
+    }
   </style>
   <!-- Fetch hyperlinks from the API dynamically -->
   <script>
@@ -1020,13 +1125,12 @@
     function updateSidebarLinks() {
       const sidebarLinks = document.querySelectorAll("aside.sidebar ul li a");
       // Order: [Explore, Projects, Events, People, News, Careers]
-      if(sidebarLinks[0]) sidebarLinks[0].href = hyperlinks["Explore/Projects"] || "#";
-      if(sidebarLinks[1]) sidebarLinks[1].href = hyperlinks["Explore/Projects"] || "#";
-      if(sidebarLinks[2]) sidebarLinks[2].href = hyperlinks["Events"] || "#";
-      if(sidebarLinks[3]) sidebarLinks[3].href = hyperlinks["People"] || "#";
+      if (sidebarLinks[0]) sidebarLinks[0].href = hyperlinks["Explore/Projects"] || "#";
+      if (sidebarLinks[1]) sidebarLinks[1].href = hyperlinks["Explore/Projects"] || "#";
+      if (sidebarLinks[2]) sidebarLinks[2].href = hyperlinks["Events"] || "#";
+      if (sidebarLinks[3]) sidebarLinks[3].href = hyperlinks["People"] || "#";
       // For News and Careers, if no hyperlink provided, they remain "#"
     }
-    // Fetch hyperlinks from the API so that if values change, they are updated automatically.
     fetch("https://sheet2api.com/v1/rhBSJNTTYKgC/hyperlinks")
       .then(response => response.json())
       .then(data => {
